@@ -59,7 +59,7 @@ export class PlaygroundUI {
     const signal=this.abort.signal;
     const listen=(id:string,action:()=>void)=>document.getElementById(id)!.addEventListener('click',action,{signal});
     for(const s of SQUISHIES)document.querySelector(`[data-toy="${s.id}"]`)!.addEventListener('click',()=>onToy(s),{signal});
-    for(const e of ENVIRONMENTS)document.querySelector(`[data-world="${e.id}"]`)!.addEventListener('click',()=>{onWorld(e);this.showWorlds(false);},{signal});
+    for(const e of ENVIRONMENTS)document.querySelector(`.world-option[data-world="${e.id}"]`)!.addEventListener('click',()=>{onWorld(e);this.showWorlds(false);},{signal});
     for(const filter of document.querySelectorAll<HTMLButtonElement>('[data-filter]'))filter.addEventListener('click',()=>{
       for(const f of document.querySelectorAll('[data-filter]'))f.setAttribute('aria-pressed',String(f===filter));
       for(const card of document.querySelectorAll<HTMLElement>('[data-toy]'))card.hidden=filter.dataset.filter!=='all'&&card.dataset.family!==filter.dataset.filter;
@@ -98,7 +98,7 @@ export class PlaygroundUI {
     for(const card of document.querySelectorAll<HTMLElement>('[data-toy]'))card.setAttribute('aria-pressed',String(card.dataset.toy===spec.id));
   }
   selectWorld(spec:EnvironmentSpec){
-    for(const card of document.querySelectorAll<HTMLElement>('[data-world]'))card.setAttribute('aria-pressed',String(card.dataset.world===spec.id));
+    for(const card of document.querySelectorAll<HTMLElement>('.world-option[data-world]'))card.setAttribute('aria-pressed',String(card.dataset.world===spec.id));
     document.body.dataset.world=spec.id;
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content',spec.background);
   }
