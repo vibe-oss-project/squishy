@@ -1066,3 +1066,47 @@ body[data-world=space] .toy-caption p,body[data-world=space] .toy-caption a,body
     scroll-behavior:auto!important;
   }
 }
+
+.gesture-toolbar {
+  position:fixed;
+  z-index:3;
+  left:50%;
+  bottom:calc(var(--dock-height) + 67px);
+  transform:translateX(-50%);
+  display:flex;
+  gap:4px;
+  padding:5px;
+  background:rgba(255,255,255,.86);
+  border:1px solid rgba(255,255,255,.8);
+  border-radius:30px;
+  box-shadow:0 5px 25px #67517d0c;
+}
+.gesture-toolbar button {
+  padding:11px 18px;
+  min-height:44px;
+  border-radius:24px;
+  background:transparent;
+  color:#897896;
+  font-size:12px;
+  white-space:nowrap;
+}
+.gesture-toolbar button[aria-pressed=true] {
+  background:#e4d5f4;
+  color:#573d76;
+  box-shadow:0 2px 5px #63458212;
+}
+body[data-gesture=squish] #viewport canvas {cursor:crosshair;}
+body[data-gesture=squish] .grip-ring {width:36px;height:36px;background:#f5bed24a;border-color:#f0a4c5;}
+@media(max-width:1050px) {
+  .gesture-toolbar {bottom:calc(var(--dock-height) + 95px);}
+}
+@media(max-width:700px) {
+  .gesture-toolbar {bottom:calc(var(--dock-height) + 77px);}
+  .gesture-toolbar button {font-size:11px;padding:9px 14px;}
+  .play-hint {max-width:65%;}
+  .play-tools .pill {max-width:100px;}
+}
+@media(max-height:600px) {
+  .gesture-toolbar {bottom:calc(var(--dock-height) + 38px);}
+  .gesture-toolbar button {padding:7px 12px;min-height:34px;}
+}

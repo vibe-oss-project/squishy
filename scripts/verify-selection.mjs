@@ -46,9 +46,15 @@ try {
   assert.equal(selection.toy,null);assert.equal(scene.children.length,0,'teardown never reattaches a stale toy');
   const worldScene=new Scene(),world=new PlaygroundWorld(worldScene);
   for(const environment of ENVIRONMENTS){
-    world.set(environment);let meshes=0;
+    world.set(environment,true);let meshes=0;
     world.group.traverse(object=>{if(object instanceof Mesh){meshes++;const positions=object.geometry.attributes.position.array;assert(positions.every(Number.isFinite),'environment geometry is finite');assert(object.material.isNodeMaterial,'environments use WebGPU node materials');}});
     assert(meshes>10,`${environment.id}: complete environment geometry`);
+    const walls=[];world.group.traverse(object=>{if(object instanceof Mesh&&object.geometry.parameters?.height===40&&Math.abs(object.rotation.x)<.01)walls.push(object);});
+    assert.equal(walls.length,3,'sticky worlds have three tall visible walls');
+    world.follow(100);for(const wall of walls)assert(Math.abs(wall.position.y-100)<20,'walls cover the camera even far above the initial room');
+    world.set(environment,false);
+    const vertical=[];world.group.traverse(object=>{if(object instanceof Mesh&&object.geometry.parameters?.height===40&&Math.abs(object.rotation.x)<.01)vertical.push(object);});
+    assert.equal(vertical.length,0,'classic worlds have no visible vertical walls');
   }
   world.dispose();assert.equal(worldScene.children.length,0,'environment disposal removes lights and geometry');
   console.log('Latest choice, aborted fetch, stale compilation, serialized world changes, resource cleanup and 5 WebGPU environment graphs passed.');

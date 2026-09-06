@@ -1,10 +1,10 @@
 {
   "id": "sleepy",
-  "sourceHash": "cbca6dcd148fae3168760902c7db1af4992d0db2ef2af39a8fbf7f0eace6a4fb",
+  "sourceHash": "eedd50cfe8eee5a7890a4a76728c47dbc3af377432ca5da4349407991b6b33c0",
   "source": "https://squishy-official.com/produit/squishy-chat-endormi/",
-  "scale": 0.027065114545527482,
-  "bottom": -0.19849114626080175,
-  "volume": 0.0000365013986417275,
+  "scale": 0.02809142692370234,
+  "bottom": -0.1,
+  "volume": 0.0000434450999058271,
   "face": {
     "x": 0.26,
     "y": 1.85,
@@ -20,56 +20,56 @@
   "layout": {
     "positions": {
       "offset": 0,
-      "length": 61788,
+      "length": 192120,
       "type": "Float32Array"
     },
     "normals": {
-      "offset": 247152,
-      "length": 61788,
+      "offset": 768480,
+      "length": 192120,
       "type": "Float32Array"
     },
     "indices": {
-      "offset": 494304,
-      "length": 123564,
+      "offset": 1536960,
+      "length": 384228,
       "type": "Uint32Array"
     },
     "colors": {
-      "offset": 988560,
-      "length": 61788,
+      "offset": 3073872,
+      "length": 192120,
       "type": "Float32Array"
     },
     "particles": {
-      "offset": 1235712,
-      "length": 1038,
+      "offset": 3842352,
+      "length": 1101,
       "type": "Float64Array"
     },
     "tets": {
-      "offset": 1244016,
-      "length": 4704,
+      "offset": 3851160,
+      "length": 5136,
       "type": "Uint32Array"
     },
     "volumes": {
-      "offset": 1262832,
-      "length": 1176,
+      "offset": 3871704,
+      "length": 1284,
       "type": "Float64Array"
     },
     "bindingIds": {
-      "offset": 1272240,
-      "length": 82384,
+      "offset": 3881976,
+      "length": 256160,
       "type": "Uint32Array"
     },
     "bindingWeights": {
-      "offset": 1601776,
-      "length": 82384,
+      "offset": 4906616,
+      "length": 256160,
       "type": "Float64Array"
     },
     "tetIds": {
-      "offset": 2260848,
-      "length": 20596,
+      "offset": 6955896,
+      "length": 64040,
       "type": "Uint32Array"
     },
     "contacts": {
-      "offset": 2343232,
+      "offset": 7212056,
       "length": 768,
       "type": "Uint32Array"
     }

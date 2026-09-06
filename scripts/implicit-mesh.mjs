@@ -9,8 +9,16 @@ export function implicitMesh(sdf,bounds,spacing=.045) {
   const positions=[],normals=[],indices=[],edges=new Map();
   const vertex=(a,b)=>{
     const key=a<b?`${a}:${b}`:`${b}:${a}`;if(edges.has(key))return edges.get(key);
-    const va=xyz(a),vb=xyz(b),t=values[a]/(values[a]-values[b]);
-    p.set(...va.map((v,i)=>v+(vb[i]-v)*t));const pos=p.clone(),eps=spacing*.25;
+    const va=xyz(a),vb=xyz(b);let t=values[a]/(values[a]-values[b]),low=0,high=1,fl=values[a],fh=values[b];
+    // Refine the actual implicit surface so round silhouettes do not inherit
+    // the grid's linear interpolation error, especially on ears and cheeks.
+    for(let step=0;step<5;step++){
+      p.set(...va.map((v,i)=>v+(vb[i]-v)*t));const value=sdf(p);
+      if(Math.abs(value)<1e-8)break;
+      if((value<0)===(values[a]<0)){low=t;fl=value;}else{high=t;fh=value;}
+      t=low-fl*(high-low)/(fh-fl);
+    }
+    p.set(...va.map((v,i)=>v+(vb[i]-v)*t));const pos=p.clone(),eps=spacing*.08;
     const grad=new Vector3(...[0,1,2].map(axis=>{p.copy(pos);p.setComponent(axis,pos.getComponent(axis)+eps);const a=sdf(p);p.setComponent(axis,pos.getComponent(axis)-eps);return a-sdf(p);})).normalize();
     const id=positions.length/3;positions.push(...pos.toArray());normals.push(...grad.toArray());edges.set(key,id);return id;
   };

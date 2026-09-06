@@ -22,14 +22,16 @@ The toy references and visual inspiration come from [Squishy Official](https://s
 | [Cat Burger](https://squishy-official.com/produit/squishy-hamburger-chat/) | [Mochi Chick](https://squishy-official.com/produit/squishy-mochi-poussin/) |
 | [Milk Carton](https://squishy-official.com/produit/squishy-brique-de-lait/) | [Mochi Hamster](https://squishy-official.com/produit/squishy-mochi-hamster/) |
 
-Each toy has its own closed surface mesh, volumetric cage, colors, face, and material preset. The selected variants include an orange hamster and burger, a pink milk carton, and a very pale pink bunny. Models load on demand; only one toy is simulated at a time.
+Each toy has a refined closed surface mesh (approximately 48,000–94,000 vertices), volumetric cage, colors, face, and material preset. Paint boundaries are evaluated per pixel, so bands, ears, and markings stay smooth as the skin deforms. The selected variants include an orange hamster and burger, a pink milk carton, and a very pale pink bunny. Models load on demand; only one toy is simulated at a time.
 
 The sculptures interpret the available photographs, including unseen surfaces. They are not verified pixel-perfect replicas. Material settings are tuned for play, not laboratory measurements; the sticky classification describes this simulation and does not certify that the store's products stick to walls.
 
 ## How to play
 
-- **Touch screen:** place several fingers on different parts. Pull apart to stretch or move together to squeeze, horizontally or from top to bottom. Up to 16 independent holds are supported; lifting one finger keeps the others in place. A pen and finger can work together.
-- **Mouse:** drag to grab and throw. **Shift + click** pins a point so you can drag another part against it. The **Pin a point** button does the same. Shift + click a pin again to remove it.
+- **Squish mode (default for classics):** press and hold anywhere to make a local dent. A temporary supporting palm keeps the toy from flying away. Slide to knead and release for a soft recovery.
+- **Touch screen:** place several fingers on different parts. Pull apart to stretch or move together to squeeze, horizontally or from top to bottom. Up to 13 independent holds in Squish mode, or 16 in Grab & throw mode, are supported; lifting one finger keeps the others in place. A pen and finger can work together.
+- **Grab & throw mode:** drag to move and throw. For sticky Mochi, drag onto a patterned wall and release to attach; grab again and pull to peel away.
+- **Mouse:** in Grab & throw mode, **Shift + click** pins a point so you can drag another part against it. The **Pin a point** button does the same. Shift + click a pin again to remove it.
 - **Trackpad:** use pins for multiple holds. Browsers do not expose separate trackpad fingers as individual points on the toy.
 - **Camera:** drag the background to rotate; scroll or pinch the background to zoom. The camera stays still while you hold the toy.
 - **Keyboard:** **R** resets, **Esc** releases all holds, and **Space** makes a little hop. **WASD / arrow keys** give small nudges along the floor.
@@ -38,7 +40,7 @@ Holds are cleared on cancellation, loss of focus, and changes of toy or world. S
 
 ## Five little worlds
 
-**Cloud Nine**, **Mochi Room**, **Candy Break**, **Vanilla Beach**, and **Starry Dream** are available from the world picker. Each has a floor and three physical walls, with its own friction and adhesion settings. Wall illustrations sit behind the contact planes. A toy thrown far outside the play area returns to the center.
+**Cloud Nine**, **Mochi Room**, **Candy Break**, **Vanilla Beach**, and **Starry Dream** are available from the world picker. Classics use an open floor without physical or visual walls. Sticky Mochi use a larger room, with its own friction and adhesion settings. Walls continue above the camera and repeating illustrations keep the world colorful at any height. Ground motifs and lowered artwork are visible at startup. High throws are preserved; only throws far outside the horizontal play area reset.
 
 ## Run locally
 
@@ -64,7 +66,7 @@ With the Git repository connected, pushes to `main` deploy to production and pul
 - Distributed adhesion with local contact capture, compliant force-limited bonds, aging, peeling, and a reattachment cooldown. Gravity remains active.
 - The C/WebAssembly solver invokes the same contact system as the JavaScript path between constraint iterations.
 - Eyes, mouths, and small facial details follow the deformed surface.
-- Bounded simulation work: at most **768 contact samples**, **40 adhesive bonds**, and **12 physics substeps per frame**.
+- Bounded simulation work: at most **768 contact samples**, **48 adhesive bonds**, and **12 physics substeps per frame**.
 - A strict **4-million-pixel** drawing-buffer cap, including effective DPR values below 1 on large displays. Startup and fatal GPU errors stop the game and show diagnostics.
 
 The new toys use matte and satin materials. Scott's original jelly optics, source modules, assets, and regression tests remain in the repository.
@@ -75,6 +77,8 @@ The new toys use matte and satin materials. Scott's original jelly optics, sourc
 npm run lint
 npm run typecheck
 npm run test:squishies
+npm run test:gestures
+npm run test:rest
 npm run test:multitouch
 npm run test:selection
 npm run test:collisions
@@ -84,7 +88,7 @@ npm run test:faces
 npm run build
 ```
 
-Tests cover closed meshes, opposing grabs, compression, deformed face attachment, wall adhesion and peeling, bond aging, all five surface presets, and JavaScript/WebAssembly parity. Interaction tests cover independent touch holds, mouse pins, and pen + touch. Selection tests cover cancellation, stale requests, serialized compilation, and resource disposal.
+Tests cover closed meshes, upright resting poses, opposing grabs, stationary compression, deformed face attachment, drag-to-wall adhesion and peeling, bond aging, all five surface presets, and JavaScript/WebAssembly parity. Interaction tests cover independent touch holds, mouse pins, and pen + touch. Selection tests cover cancellation, stale requests, serialized compilation, open and tall worlds, and resource disposal.
 
 Numerical tests and a production build do not validate visual likeness, GPU frame rates, or simultaneous gestures on a physical phone or iPad. Those need hands-on testing. Discrete surface contacts can show small temporary penetration during fast corner impacts; see the [implementation notes](docs/squishy-implementation.md).
 

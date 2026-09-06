@@ -5,6 +5,7 @@ import type { Locomotion } from './locomotion.ts';
 import type { JellySound } from './sound.ts';
 import { surfaceGrab, projectGrabTarget, advanceGrabTarget } from '../physics/grab.ts';
 import { MAX_GRABS } from '../physics/soft-body-kernel.js';
+import type { GrabBehavior } from './grab-behavior.ts';
 import { SurfaceBVH } from '../graphics/refractive-light.js';
 
 type PointerGrab={
@@ -18,6 +19,7 @@ type PointerGrab={
   physicsSteps:number;
   commandVersion:number;
   consumedVersion:number;
+  pressure:number;
 };
 
 export class Input {
@@ -43,12 +45,13 @@ export class Input {
   readonly rig:Pick<Locomotion,'move'|'jump'|'reset'>;
   private pinSerial=-1;
   private pinMode:()=>boolean;
+  private readonly behavior?:GrabBehavior;
   readonly sound:JellySound;
   readonly reset:()=>void;
   constructor(camera:THREE.PerspectiveCamera,canvas:HTMLCanvasElement,
     body:SoftBody,mesh:THREE.Mesh,rig:Pick<Locomotion,'move'|'jump'|'reset'>,sound:JellySound,
-    reset:()=>void,pinMode:()=>boolean=()=>false) {
-    this.pinMode=pinMode;
+    reset:()=>void,pinMode:()=>boolean=()=>false,behavior?:GrabBehavior) {
+    this.pinMode=pinMode;this.behavior=behavior;
     this.camera=camera;this.body=body;this.mesh=mesh;this.rig=rig;this.sound=sound;this.reset=reset;
     this.canvas=canvas;this.grabBVH=new SurfaceBVH(body.surface);
     this.controls=new OrbitControls(camera,canvas);
@@ -135,7 +138,9 @@ export class Input {
     const samples=e.getCoalescedEvents?.()??[];
     const sample=samples.length?samples[samples.length-1]:e;
     this.eventRay(sample);
-    if(projectGrabTarget(this.raycaster.ray,state.plane,this.temp)) {
+    const pressure=sample.pressure;
+    if(pressure>0)state.pressure=sample.pointerType==='mouse'||pressure===.5?1:pressure;
+    if(this.behavior?this.behavior.project(state.grab,this.raycaster.ray,state.plane,this.temp):projectGrabTarget(this.raycaster.ray,state.plane,this.temp)) {
       state.rawTarget.copy(this.temp);state.commandVersion++;return true;
     }
     return false;
@@ -157,15 +162,16 @@ export class Input {
     const point=ray.at(hit.distance,new THREE.Vector3());
     void this.sound.unlock().catch(()=>{});
     e.preventDefault();e.stopImmediatePropagation();
-    const pinned=e.pointerType!=='touch'&&(e.shiftKey||this.pinMode());
+    const pinned=(this.behavior?.canPin()??true)&&e.pointerType!=='touch'&&(e.shiftKey||this.pinMode());
     if(pinned)for(const [id,state] of this.grabs)if(state.pinned&&state.grab.point.distanceTo(point)<.006){this.finishRelease(id);return;}
     const grab=surfaceGrab(this.body,face,point);if(!grab)return;
     this.body.grabs.push(grab);this.body.wake();
+    this.behavior?.begin(grab,ray,pinned);
     this.camera.getWorldDirection(this.temp);
     this.grabs.set(pinned?this.pinSerial--:e.pointerId,{
       grab,pointerType:e.pointerType,pinned,
       plane:new THREE.Plane().setFromNormalAndCoplanarPoint(this.temp,point),rawTarget:point.clone(),
-      releasePending:false,releaseStepsRemaining:0,physicsSteps:0,commandVersion:0,consumedVersion:0,
+      releasePending:false,releaseStepsRemaining:0,physicsSteps:0,commandVersion:0,consumedVersion:0,pressure:e.pointerType==='mouse'||!e.pressure||e.pressure===.5?1:e.pressure,
     });
     this.controls.enabled=false;
     if(!pinned)this.canvas.setPointerCapture(e.pointerId);this.canvas.classList.add('grabbing');
@@ -209,6 +215,7 @@ export class Input {
       this.grabs.delete(pointerId);
       const index=this.body.grabs.indexOf(state.grab);
       if(index!==-1)this.body.grabs.splice(index,1);
+      this.behavior?.release(state.grab);
       if(!state.pinned&&this.canvas.hasPointerCapture(pointerId))this.canvas.releasePointerCapture(pointerId);
     }
     if(id===undefined)this.body.grab=null;
@@ -255,7 +262,8 @@ export class Input {
     } else this.rig.move.set(0,0,0);
     for(const state of this.grabs.values()) {
       const grab=state.grab;
-      advanceGrabTarget(grab.target,state.rawTarget,h,grab.point);
+      if(this.behavior)this.behavior.advance(grab,state.rawTarget,h,state.pressure);
+      else advanceGrabTarget(grab.target,state.rawTarget,h,grab.point);
       state.consumedVersion=state.commandVersion;state.physicsSteps++;
     }
   }
@@ -279,6 +287,9 @@ export class Input {
     this.controls.update();
   }
   get handles() {return [...this.grabs.values()].map(state=>({point:state.grab.point,target:state.grab.target,pinned:!!state.pinned}));}
+  home(position:THREE.Vector3,target:THREE.Vector3) {
+    this.clear();this.follow.copy(target);this.controls.target.copy(target);this.camera.position.copy(position);this.controls.update();
+  }
   recenter() {this.clear();this.rig.reset();}
   dispose() {this.clear();this.abort.abort();this.controls.dispose();}
 }

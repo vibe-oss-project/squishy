@@ -1,10 +1,10 @@
 {
   "id": "bunny",
-  "sourceHash": "cbca6dcd148fae3168760902c7db1af4992d0db2ef2af39a8fbf7f0eace6a4fb",
+  "sourceHash": "eedd50cfe8eee5a7890a4a76728c47dbc3af377432ca5da4349407991b6b33c0",
   "source": "https://squishy-official.com/produit/squishy-mochi-lapin/",
-  "scale": 0.03312636425128673,
-  "bottom": -0.10489663030031848,
-  "volume": 0.00005166205906130193,
+  "scale": 0.03286547148272074,
+  "bottom": -0.11994811541797291,
+  "volume": 0.00005273688061694813,
   "face": {
     "x": 0.255,
     "y": 0.73,
@@ -20,56 +20,56 @@
   "layout": {
     "positions": {
       "offset": 0,
-      "length": 50430,
+      "length": 158022,
       "type": "Float32Array"
     },
     "normals": {
-      "offset": 201720,
-      "length": 50430,
+      "offset": 632088,
+      "length": 158022,
       "type": "Float32Array"
     },
     "indices": {
-      "offset": 403440,
-      "length": 100848,
+      "offset": 1264176,
+      "length": 316032,
       "type": "Uint32Array"
     },
     "colors": {
-      "offset": 806832,
-      "length": 50430,
+      "offset": 2528304,
+      "length": 158022,
       "type": "Float32Array"
     },
     "particles": {
-      "offset": 1008552,
-      "length": 1266,
+      "offset": 3160392,
+      "length": 1278,
       "type": "Float64Array"
     },
     "tets": {
-      "offset": 1018680,
-      "length": 6000,
+      "offset": 3170616,
+      "length": 6072,
       "type": "Uint32Array"
     },
     "volumes": {
-      "offset": 1042680,
-      "length": 1500,
+      "offset": 3194904,
+      "length": 1518,
       "type": "Float64Array"
     },
     "bindingIds": {
-      "offset": 1054680,
-      "length": 67240,
+      "offset": 3207048,
+      "length": 210696,
       "type": "Uint32Array"
     },
     "bindingWeights": {
-      "offset": 1323640,
-      "length": 67240,
+      "offset": 4049832,
+      "length": 210696,
       "type": "Float64Array"
     },
     "tetIds": {
-      "offset": 1861560,
-      "length": 16810,
+      "offset": 5735400,
+      "length": 52674,
       "type": "Uint32Array"
     },
     "contacts": {
-      "offset": 1928800,
+      "offset": 5946096,
       "length": 768,
       "type": "Uint32Array"
     }

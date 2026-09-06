@@ -1,10 +1,10 @@
 {
   "id": "burger",
-  "sourceHash": "cbca6dcd148fae3168760902c7db1af4992d0db2ef2af39a8fbf7f0eace6a4fb",
+  "sourceHash": "eedd50cfe8eee5a7890a4a76728c47dbc3af377432ca5da4349407991b6b33c0",
   "source": "https://squishy-official.com/produit/squishy-hamburger-chat/",
-  "scale": 0.03882171943283622,
-  "bottom": -0.029992626106173762,
-  "volume": 0.00017942463330231778,
+  "scale": 0.0388347019432846,
+  "bottom": -0.029998808670565865,
+  "volume": 0.00018021165137797662,
   "face": {
     "x": 0.44,
     "y": 1.22,
@@ -20,56 +20,56 @@
   "layout": {
     "positions": {
       "offset": 0,
-      "length": 89352,
+      "length": 281322,
       "type": "Float32Array"
     },
     "normals": {
-      "offset": 357408,
-      "length": 89352,
+      "offset": 1125288,
+      "length": 281322,
       "type": "Float32Array"
     },
     "indices": {
-      "offset": 714816,
-      "length": 178704,
+      "offset": 2250576,
+      "length": 562644,
       "type": "Uint32Array"
     },
     "colors": {
-      "offset": 1429632,
-      "length": 89352,
+      "offset": 4501152,
+      "length": 281322,
       "type": "Float32Array"
     },
     "particles": {
-      "offset": 1787040,
-      "length": 2238,
+      "offset": 5626440,
+      "length": 2241,
       "type": "Float64Array"
     },
     "tets": {
-      "offset": 1804944,
-      "length": 12000,
+      "offset": 5644368,
+      "length": 12024,
       "type": "Uint32Array"
     },
     "volumes": {
-      "offset": 1852944,
-      "length": 3000,
+      "offset": 5692464,
+      "length": 3006,
       "type": "Float64Array"
     },
     "bindingIds": {
-      "offset": 1876944,
-      "length": 119136,
+      "offset": 5716512,
+      "length": 375096,
       "type": "Uint32Array"
     },
     "bindingWeights": {
-      "offset": 2353488,
-      "length": 119136,
+      "offset": 7216896,
+      "length": 375096,
       "type": "Float64Array"
     },
     "tetIds": {
-      "offset": 3306576,
-      "length": 29784,
+      "offset": 10217664,
+      "length": 93774,
       "type": "Uint32Array"
     },
     "contacts": {
-      "offset": 3425712,
+      "offset": 10592760,
       "length": 768,
       "type": "Uint32Array"
     }

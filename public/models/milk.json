@@ -1,10 +1,10 @@
 {
   "id": "milk",
-  "sourceHash": "cbca6dcd148fae3168760902c7db1af4992d0db2ef2af39a8fbf7f0eace6a4fb",
+  "sourceHash": "eedd50cfe8eee5a7890a4a76728c47dbc3af377432ca5da4349407991b6b33c0",
   "source": "https://squishy-official.com/produit/squishy-brique-de-lait/",
-  "scale": 0.033254156769596206,
-  "bottom": 0.029999999999999957,
-  "volume": 0.00007789028021377813,
+  "scale": 0.0332541567695962,
+  "bottom": 0.029999999999999902,
+  "volume": 0.00007803821796986323,
   "face": {
     "x": 0.3,
     "y": 1.22,
@@ -20,56 +20,56 @@
   "layout": {
     "positions": {
       "offset": 0,
-      "length": 60816,
+      "length": 183636,
       "type": "Float32Array"
     },
     "normals": {
-      "offset": 243264,
-      "length": 60816,
+      "offset": 734544,
+      "length": 183636,
       "type": "Float32Array"
     },
     "indices": {
-      "offset": 486528,
-      "length": 121620,
+      "offset": 1469088,
+      "length": 367260,
       "type": "Uint32Array"
     },
     "colors": {
-      "offset": 973008,
-      "length": 60816,
+      "offset": 2938128,
+      "length": 183636,
       "type": "Float32Array"
     },
     "particles": {
-      "offset": 1216272,
+      "offset": 3672672,
       "length": 1455,
       "type": "Float64Array"
     },
     "tets": {
-      "offset": 1227912,
+      "offset": 3684312,
       "length": 7512,
       "type": "Uint32Array"
     },
     "volumes": {
-      "offset": 1257960,
+      "offset": 3714360,
       "length": 1878,
       "type": "Float64Array"
     },
     "bindingIds": {
-      "offset": 1272984,
-      "length": 81088,
+      "offset": 3729384,
+      "length": 244848,
       "type": "Uint32Array"
     },
     "bindingWeights": {
-      "offset": 1597336,
-      "length": 81088,
+      "offset": 4708776,
+      "length": 244848,
       "type": "Float64Array"
     },
     "tetIds": {
-      "offset": 2246040,
-      "length": 20272,
+      "offset": 6667560,
+      "length": 61212,
       "type": "Uint32Array"
     },
     "contacts": {
-      "offset": 2327128,
+      "offset": 6912408,
       "length": 768,
       "type": "Uint32Array"
     }

@@ -19,7 +19,9 @@
     "test:squishies": "node --experimental-strip-types scripts/verify-squishies.mjs",
     "test:faces": "node --experimental-strip-types scripts/verify-faces.mjs",
     "test:selection": "node --experimental-strip-types scripts/verify-selection.mjs",
-    "test:collisions": "node --experimental-strip-types scripts/verify-collisions.mjs"
+    "test:collisions": "node --experimental-strip-types scripts/verify-collisions.mjs",
+    "test:gestures": "node --experimental-strip-types scripts/verify-gestures.mjs",
+    "test:rest": "node --experimental-strip-types scripts/verify-rest.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

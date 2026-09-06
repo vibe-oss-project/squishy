@@ -1,10 +1,10 @@
 {
   "id": "seal",
-  "sourceHash": "cbca6dcd148fae3168760902c7db1af4992d0db2ef2af39a8fbf7f0eace6a4fb",
+  "sourceHash": "eedd50cfe8eee5a7890a4a76728c47dbc3af377432ca5da4349407991b6b33c0",
   "source": "https://squishy-official.com/produit/squishy-mochi-phoque/",
   "scale": 0.031,
-  "bottom": -0.00996305338167765,
-  "volume": 0.0000437797183734511,
+  "bottom": -0.009996449275667412,
+  "volume": 0.000043836264813433285,
   "face": {
     "x": 0.255,
     "y": 0.41,
@@ -20,56 +20,56 @@
   "layout": {
     "positions": {
       "offset": 0,
-      "length": 50340,
+      "length": 151398,
       "type": "Float32Array"
     },
     "normals": {
-      "offset": 201360,
-      "length": 50340,
+      "offset": 605592,
+      "length": 151398,
       "type": "Float32Array"
     },
     "indices": {
-      "offset": 402720,
-      "length": 100668,
+      "offset": 1211184,
+      "length": 302784,
       "type": "Uint32Array"
     },
     "colors": {
-      "offset": 805392,
-      "length": 50340,
+      "offset": 2422320,
+      "length": 151398,
       "type": "Float32Array"
     },
     "particles": {
-      "offset": 1006752,
+      "offset": 3027912,
       "length": 1176,
       "type": "Float64Array"
     },
     "tets": {
-      "offset": 1016160,
+      "offset": 3037320,
       "length": 5448,
       "type": "Uint32Array"
     },
     "volumes": {
-      "offset": 1037952,
+      "offset": 3059112,
       "length": 1362,
       "type": "Float64Array"
     },
     "bindingIds": {
-      "offset": 1048848,
-      "length": 67120,
+      "offset": 3070008,
+      "length": 201864,
       "type": "Uint32Array"
     },
     "bindingWeights": {
-      "offset": 1317328,
-      "length": 67120,
+      "offset": 3877464,
+      "length": 201864,
       "type": "Float64Array"
     },
     "tetIds": {
-      "offset": 1854288,
-      "length": 16780,
+      "offset": 5492376,
+      "length": 50466,
       "type": "Uint32Array"
     },
     "contacts": {
-      "offset": 1921408,
+      "offset": 5694240,
       "length": 768,
       "type": "Uint32Array"
     }

@@ -1,79 +1,61 @@
 # Squishy implementation — September 6, 2026
 
-This version replaces the game entry point with a collection of ten Squishy. It preserves Scott's volumetric physics and provenance, and is maintained in [vibe-oss-project/squishy](https://github.com/vibe-oss-project/squishy). A dedicated Vercel project serves the [live playground](https://squishy-snowy.vercel.app), with its production branch connected to `main`. The interface, README, credits, and project documentation are in English.
+This playground adapts [Scott's Jelly Baby](https://github.com/scottstts/Jelly-Baby), preserving its volumetric physics, history, and credit. The maintained repository is [vibe-oss-project/squishy](https://github.com/vibe-oss-project/squishy); [the live playground](https://squishy-snowy.vercel.app) deploys from `main` to a dedicated Vercel project. The interface and documentation are in English.
 
-## What is implemented
+## Interaction
 
-| Request | Implementation |
-| --- | --- |
-| Five classic and five sticky toys | Ten sculptures and material presets, a photo selector, and product links |
-| Reference likeness | Silhouettes, secondary volumes, colors, and faces interpreted from product photos |
-| Multiple holds | Up to 16 independent touch holds, pen + touch, and persistent mouse pins |
-| Opposing stretches and squeezes | Constraints act on distinct material points of the volume |
-| Wall and floor adhesion | Contact planes, force-limited local bonds, peeling, aging, and reattachment cooldown |
-| Cute expressions | Blinks, squinting eyes, subtle cheeks, and smiles driven by deformation and release |
-| Visual direction | Fredoka, Lexend, the store's primary blue, and complementary pastel colors |
-| Five environments | Cloud Nine, Mochi Room, Candy Break, Vanilla Beach, and Starry Dream |
-| Original creator credit | Prominent README attribution, CREDITS, and an in-game credits dialog linking Scott's repository and demo |
+Classics start in **Squish** mode. A stationary press pushes a broad fingertip patch into the actual mechanical volume. Three temporary supporting palm patches stop that pressure from simply moving the whole toy. Each touch has its own material point and pressure value: slide to knead, pull two points apart, or bring them together horizontally or vertically. Releasing the last press removes the palm and most rigid translation velocity, while retaining elastic recovery.
 
-## Models and visual references
+**Grab & throw** moves the toy freely. Sticky toys start in this mode. Once a drag moves away from its initial point, the pointer ray projects toward the visible back or side wall. A depth allowance for the toy presses its skin against that surface. Releasing removes the finger constraint; adhesive bonds then carry the weight. Picking up a mounted toy and dragging outward opens and progressively weakens the nearby patch. Opening patches cannot form fresh bonds while being peeled. This closes the previous gap where every grab stayed on a camera-parallel plane and could never reach the wall behind it.
 
-`shapes.js` defines implicit volumes. Marching tetrahedra reconstructs a closed, indexed surface; `buildCage` associates it with a mechanical volume. Ears, paws, cheeks, burger layers, and other appendages belong to that volume.
+Pointer IDs own independent holds. The native budget is 16 constraints: up to 13 user holds plus the palm in Squish mode, or 16 user holds in Grab & throw mode. Mouse pins allow opposing holds without a touch screen. Trackpads do not expose individual fingers as separate touch points; use Shift + click or Pin a point in Grab & throw mode. Cancellation, focus loss, toy changes, world changes, and mode changes release holds and capture. The final pointer sample is simulated before removal to preserve throws.
 
-Visible surfaces contain 15,504–29,784 vertices. Cages contain 1,176–3,000 tetrahedra. Each visible vertex follows a four-node stencil. The skin, ray picking, and facial details use the same deformed positions.
-
-The milk carton is pink, the classic hamster and burger are orange, and the bunny is very pale pink. The reference catalog retains the source photograph URLs. Unseen backs, undersides, fine relief, paint imperfections, and internal details cannot be reconstructed exactly from these views. No manufacturer scans or 3D files were provided; pixel-perfect likeness is not verified.
-
-## Physical differences
+## Physical presets
 
 | Property | Classics | Sticky Mochi |
 | --- | --- | --- |
-| Simulation density | 280 kg/m³ | 980 kg/m³ |
-| Shear stiffness | 310–520 Pa | 370–850 Pa |
-| Bulk stiffness | 2,600–3,500 Pa | 26,000 Pa |
-| Solver damping | 29–44 | 5–13 |
-| Adhesion preset | 0 | 0.4–1, depending on the toy |
-| Maximum grab force per axis | 1.5 N | 2.8 N |
+| Density | 160–220 kg/m³ | 980 kg/m³ |
+| Shear stiffness | 120–340 Pa | 370–850 Pa |
+| Bulk stiffness | 1,100–1,600 Pa | 26,000 Pa |
+| Damping | 58–68 | 5–13 |
+| Gravity | 1.2 m/s² | 2.4 m/s² |
+| Adhesion | 0 | 0.4–1, depending on toy |
+| Maximum grab force per axis | 1.6 N | 2.8 N |
 
-These settings tune play feel; they are not product measurements. Classics use more compressible elasticity and stronger dissipation. The implementation does not include a complete cellular foam law or viscoelastic memory calibrated to a measured recovery time.
+These are play presets, not measured product properties. Classics use compressible elasticity and stronger dissipation. There is no laboratory-calibrated cellular foam or viscoelastic memory law.
 
-Gravity remains 2.4 m/s², as in the base project. Four fixed axis-aligned planes provide the floor, back wall, and side walls. Visual walls sit 0.3 mm behind the physical planes, leaving room for flat illustrations behind the contact surface. Throws far outside the arena reset the toy.
+The floor and wall contacts use barycentric samples of the deforming skin. There are at most 768 contact samples and 48 adhesive bonds. Capture occurs within 0.65 mm of a support, with bonds spaced at least 4 mm apart. Each bond has finite stiffness and force capacity, ages over 6–12 seconds, and can break earlier under extension or traction. A 0.35-second sample cooldown prevents immediate reattachment. Individual bonds age separately; new contacts can change the total hold duration. Gravity stays active.
 
-Adhesive bonds have a lifecycle separate from finger holds. One end follows the skin through barycentric interpolation; the other stays on the support. Bonds are solved between elasticity and grabbing passes. Estimated XPBD force, extension, and age can break each bond independently. A 0.35-second cooldown prevents immediate reattachment of the same sample.
+The C/WebAssembly solver calls the same `StickyWorld` hooks as the JavaScript path between elastic and grab iterations. Physics runs at 240 Hz with four iterations, bounded to twelve substeps per rendered frame. Conservative plane culling avoids contact work against unreachable surfaces.
 
-There are at most 40 bonds, with a minimum spacing of 4.5 mm. Total capacity depends on mass and material preset. This is not an area-integrated adhesive traction or measured fracture law. Individual bonds age; total wall-hold time also depends on new contacts forming.
+## Worlds and camera
 
-The C/WebAssembly solver imports four `StickyWorld` callbacks operating on shared position and velocity arrays. Elasticity stays accelerated in C while contacts use the same implementation as the JavaScript path.
+All five palettes support both families: **Cloud Nine**, **Mochi Room**, **Candy Break**, **Vanilla Beach**, and **Starry Dream**. Classics have an open floor and no visible or physical walls. Sticky worlds have a 37 cm wide room, a back wall at −14 cm, and side walls at ±18.5 cm. Vertical collision planes have no height limit. Large visual wall panels follow the camera vertically, and instanced illustrations repeat with height. Ground motifs and lowered illustrations are visible from the starting view.
 
-## Interaction and selection
+Moving above the original room no longer resets the toy. Only escape more than three metres horizontally from the origin, or below the floor, triggers recovery. Reset restores the view as well as the toy. Framing accounts for the collection dock and the gesture buttons on desktop, phone, and tablet layouts.
 
-Pointer IDs own independent holds. The final release sample reaches the simulation before removal to preserve throwing. Pointer capture, cancellation, visibility changes, and focus loss are cleaned up.
+## Models and rendering
 
-Mouse pins persist without capturing the physical pointer, allowing a second grab. Shift + click removes a pin; Esc and Let go release all holds. Visible markers identify pins. A trackpad does not expose separate finger positions to the browser, so this workflow uses pins.
+`shapes.js` defines implicit volumes; marching tetrahedra reconstructs closed, indexed skins. Refined edge roots and finer sampling produce approximately 48,000–94,000 visible vertices per model. The mechanical cages remain much smaller, around 1,200–3,000 tetrahedra. Rounded supporting undersides make upright resting poses more stable without adding adhesion to classics.
 
-Selection aborts old downloads, ignores stale choices, warms models in bounded batches, and serializes GPU compilation with world changes. Previous geometry and materials are disposed after replacement. The old toy stays visible while the next one is prepared.
+The visible mesh, picking, and face attachment share the same deformed surface. Rest-space paint is evaluated per fragment with derivative antialiasing, removing color borders that previously followed individual triangles. Eyes and mouth curves have more segments. Matte grain is subtle, while sticky materials have a satin finish. A 2,048-pixel shadow map uses filtered sampling. The renderer retains MSAA and the strict four-million-pixel drawing-buffer cap, including effective DPR below one on very large displays.
 
-## Verification
+The sculptures interpret product photographs, including unseen backs and undersides. They are not verified pixel-perfect replicas. No manufacturer scans or 3D files were supplied. Product references, creator attribution, and the original demo remain linked from the README and in-game credits.
 
-The implementation passed lint, TypeScript, a production build, and the inherited physics, multi-touch, structural performance, and face tests. Additional checks cover:
+## Verification and limits
 
-- All ten closed meshes and normalized skin stencils.
-- Top/bottom compression and opposing stretches on every toy, with finite states and preserved orientation barriers.
-- Face attachment to deformed surfaces throughout expression cycles.
-- The same wall throw with and without adhesion; only the sticky preset supports the toy's weight.
-- Pull-off, aging, reset, bond limits, and five surface presets.
-- JavaScript/WebAssembly parity: a maximum position difference of approximately **7.2 × 10⁻¹⁶ m** in the tested wall scenario.
-- Mouse pins, pin mode, pen + touch, independent release, and focus loss.
-- Aborted downloads, stale compilation, latest selection, serialized changes, and resource disposal.
-- Fast corner throws: approximately **0.97–1.96 mm** maximum skin penetration in three tested scenarios without inversion. Discrete contacts do not guarantee perfect separation at every instant.
-- The 4-million-pixel drawing-buffer cap, including effective DPR below 1.
+Automated checks cover:
 
-With at most 768 contact samples, four iterations, and conservative plane culling, one local compression test pass measured approximately **0.94–2.05 ms per substep** across models. These are Node CPU timings on the development machine, excluding rendering. They do not guarantee a frame rate on a phone or iPad.
+- All ten closed meshes, skin stencils, pressure and opposing stretch, finite states, and orientation barriers.
+- Stationary presses, recovery, independent touch release, mouse pins, pen + touch, and palm cleanup.
+- Actual input handlers driving wall placement, release under gravity, and peeling on the five sticky toys.
+- Bond force, age, reset, cooldown, and five world presets; JavaScript/WebAssembly agreement.
+- Ten-second resting poses, open classic worlds, and visual walls following a camera 100 metres above the origin.
+- Deformed expressions, selection cancellation, serialized shader preparation, and resource disposal.
+- Fast impacts and the drawing-buffer cap, alongside inherited physics and rendering regressions.
 
-## Visual and device validation
+Discrete contact samples can allow small temporary penetration during abrupt impacts. In three checked scenarios, maximum visible penetration was about 0.98–1.35 mm; this is not a guarantee of perfect separation in every possible gesture.
 
-The initial implementation did not start a local development server or browser inspection, following the repository instructions. TypeScript and Vite compilation do not execute shaders on a real GPU.
+GPU inspection uses deployed Vercel previews, without starting a local development server. Desktop Chrome and responsive phone/tablet layouts can validate shader compilation, framing, and controls. Simultaneous gestures on physical phones and iPads, their sustained frame rates, and exact product likeness still need hands-on device review. Node timings exclude rendering and vary with machine load; they are not mobile frame-rate claims.
 
-Hands-on review should check photo likeness, framing of all ten toys, on-screen colors and materials, environment readability, sound, and simultaneous gestures on physical phones and iPads. Material, adhesion, and expression settings are isolated for these adjustments.
-
-The game requires WebGPU and provides no WebGL fallback. Historical source modules and assets remain for provenance and regression tests; the main entry point loads Squishy Playground.
+The game requires WebGPU, with no WebGL fallback. Startup and fatal GPU failures stop the render loop and show diagnostics. Scott's historical modules, assets, and tests remain for provenance and regression coverage.

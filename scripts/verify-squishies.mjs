@@ -55,7 +55,7 @@ for(const spec of SQUISHIES){
 function againstWall(strength,useJS=false){
   const body=new SoftBody(model('fluffy').cage,SQUISHIES[5].physics);if(useJS)body.kernel=null;
   body.world=new StickyWorld(body,{strength});body.canSleep=false;
-  for(let i=0;i<body.x.length;i+=3){body.x[i+1]+=.09;body.x[i+2]-=.058;body.velocity[i+2]=-.6;}
+  for(let i=0;i<body.x.length;i+=3){body.x[i+1]+=.09;body.x[i+2]+=ROOM_PLANES[1].offset+.029;body.velocity[i+2]=-.6;}
   return body;
 }
 const plain=againstWall(0),sticky=againstWall(1),js=againstWall(1,true);
@@ -72,7 +72,7 @@ sticky.grabs=[];sticky.reset();assert.equal(sticky.world.attached,0);assert(stic
 // An isolated patch expires even without a grab, and immediate recapture of
 // the same contact is prevented. Floor planes cannot create sticky classics.
 const patch=againstWall(1);for(let i=0;i<25;i++)patch.step(h);assert(patch.world.attached>0);
-const key=patch.world.bonds.keys().next().value;patch.world.bonds.get(key).created=-10;patch.world.begin(h);
+const key=patch.world.bonds.keys().next().value;patch.world.bonds.get(key).created=-100;patch.world.begin(h);
 assert(!patch.world.bonds.has(key),'old bonds expire');assert(patch.world.cooldown[key]>patch.world.time,'detachment has hysteresis');
 for(const e of ENVIRONMENTS){const b=againstWall(1);b.world=new StickyWorld(b,{strength:1,grip:e.grip,friction:e.friction});for(let i=0;i<70;i++)b.step(h);healthy(b,e.id);assert(b.world.attached>0,`${e.id}: sticky surfaces`);}
 assert.equal(ROOM_PLANES.length,4);

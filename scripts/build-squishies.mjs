@@ -8,9 +8,9 @@ import { implicitMesh } from './implicit-mesh.mjs';
 import { buildCage } from './model-cage.mjs';
 
 mkdirSync('public/models',{recursive:true});
-const sourceHash=createHash('sha256').update(readFileSync('src/squishy/shapes.js')).update(readFileSync('scripts/implicit-mesh.mjs')).digest('hex');
+const sourceHash=createHash('sha256').update(readFileSync('src/squishy/shapes.js')).update(readFileSync('scripts/implicit-mesh.mjs')).update(readFileSync('scripts/build-squishies.mjs')).digest('hex');
 for(const model of SQUISHIES) {
-  const shape=sculpt(model.id),raw=implicitMesh(shape.sdf,shape.bounds),p=raw.positions;
+  const shape=sculpt(model.id),raw=implicitMesh(shape.sdf,shape.bounds,.026),p=raw.positions;
   let minY=Infinity,maxY=-Infinity;for(let i=1;i<p.length;i+=3){minY=Math.min(minY,p[i]);maxY=Math.max(maxY,p[i]);}
   // Keep the seal horizontal and roughly the same apparent size as the others.
   const scale=model.id==='seal'?.031:.07/(maxY-minY),bottom=minY;

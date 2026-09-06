@@ -1,13 +1,14 @@
 // Local contact patches shared by JS and the native XPBD solver. The native
 // kernel calls these hooks between elastic/grab iterations, on its own arrays.
 // Adhesion is a finite-force, finite-lived bond; it never freezes the whole toy.
-export const MAX_BONDS=40;
+export const MAX_BONDS=48;
 export const ROOM_PLANES=[
   {axis:1,sign:1,offset:.00015,name:'floor'},
-  {axis:2,sign:1,offset:-.087,name:'back'},
-  {axis:0,sign:1,offset:-.125,name:'left'},
-  {axis:0,sign:-1,offset:-.125,name:'right'},
+  {axis:2,sign:1,offset:-.14,name:'back'},
+  {axis:0,sign:1,offset:-.185,name:'left'},
+  {axis:0,sign:-1,offset:-.185,name:'right'},
 ];
+export const OPEN_PLANES=ROOM_PLANES.slice(0,1);
 
 export class StickyWorld {
   constructor(body,{strength=0,grip=1,friction=1,planes=ROOM_PLANES}={}) {
@@ -19,8 +20,21 @@ export class StickyWorld {
     this.low=new Float64Array(3);this.high=new Float64Array(3);this.active=[];this.axes=[];
   }
   get attached(){return this.bonds.size;}
+  get wallAttached(){let count=0;for(const bond of this.bonds.values())if(this.planes[bond.plane].name!=='floor')count++;return count;}
   sample(c,out,array=this.body.x) {
     out.fill(0);for(const [id,w] of c.weights)for(let a=0;a<3;a++)out[a]+=array[id*3+a]*w;return out;
+  }
+  openingTraction(point,plane) {
+    const {axis,sign}=plane;let pull=0;
+    for(const grab of this.body.grabs){
+      if(!grab.peel)continue;
+      const opening=sign*(grab.target.getComponent(axis)-grab.point.getComponent(axis));
+      if(opening<=.002)continue;
+      let tangent=0;
+      for(let a=0;a<3;a++)if(a!==axis)tangent+=(grab.point.getComponent(a)-point[a])**2;
+      pull=Math.max(pull,Math.min(1,(opening-.002)/.006)/(1+tangent/.0025));
+    }
+    return pull;
   }
   begin(h) {
     this.time+=h;this.normal.fill(0);this.grounded=false;this.impact=0;this.peeled=0;
@@ -31,7 +45,12 @@ export class StickyWorld {
     }
     for(const [key,bond] of this.bonds){
       bond.lambda.fill(0);
-      if(this.time-bond.created>1.4+this.strength*5)this.detach(key);
+      if(this.time-bond.created>6+this.strength*6){this.detach(key);continue;}
+      const pull=this.openingTraction(bond.anchor,this.planes[bond.plane]);
+      // Sustained opening traction damages nearby bonds first, allowing a
+      // soft toy to peel without weakening an untouched wall attachment.
+      bond.damage=Math.min(1,bond.damage+h*12*pull);
+      if(bond.damage>=1)this.detach(key);
     }
   }
   detach(key) {this.bonds.delete(key);this.cooldown[key]=this.time+.35;this.peeled++;}
@@ -44,7 +63,7 @@ export class StickyWorld {
     for(let i=0;i<x.length;i+=3)for(let a=0;a<3;a++){this.low[a]=Math.min(this.low[a],x[i+a]);this.high[a]=Math.max(this.high[a],x[i+a]);}
     for(let j=0;j<count;j++){
       const {axis,sign,offset}=this.planes[j],near=sign>0?this.low[axis]:-this.high[axis];
-      if(near-offset<.00021){this.active.push(j);if(!this.axes.includes(axis))this.axes.push(axis);}
+      if(near-offset<.00066){this.active.push(j);if(!this.axes.includes(axis))this.axes.push(axis);}
     }
     for(let i=0;this.active.length&&i<contacts.length;i++){
       const c=contacts[i];this.point.fill(0);let complete=false;
@@ -52,7 +71,7 @@ export class StickyWorld {
       for(const j of this.active){
         const plane=this.planes[j],{axis,sign,offset}=plane,key=i*count+j;
         const distance=sign*this.point[axis]-offset;
-        if(distance>=.0002)continue;
+        if(distance>=.00065)continue;
         if(this.strength>0&&!complete){this.sample(c,this.point);complete=true;}
         if(distance<0){
           const depth=-distance;this.normal[key]+=depth;
@@ -61,20 +80,24 @@ export class StickyWorld {
         }
         if(plane.name==='floor')this.grounded=true;
         if(this.strength<=0||this.grip<=0||this.bonds.size>=MAX_BONDS||this.bonds.has(key)||this.cooldown[key]>this.time)continue;
+        // An opening patch cannot make fresh bonds while it is being peeled.
+        if(this.openingTraction(this.point,plane)>.04)continue;
         // Space bonds over the contact patch. Dense visual vertices must not
         // artificially multiply total adhesion or all attach to one spot.
         let nearby=false;
-        for(const bond of this.bonds.values())if(bond.plane===j&&Math.hypot(bond.anchor[0]-this.point[0],bond.anchor[1]-this.point[1],bond.anchor[2]-this.point[2])<.0045){nearby=true;break;}
+        for(const bond of this.bonds.values())if(bond.plane===j&&Math.hypot(bond.anchor[0]-this.point[0],bond.anchor[1]-this.point[1],bond.anchor[2]-this.point[2])<.004){nearby=true;break;}
         if(nearby)continue;
         const anchor=this.point.slice();anchor[axis]=offset*sign;
-        this.bonds.set(key,{contact:i,plane:j,anchor,created:this.time,lambda:new Float64Array(3)});
+        this.bonds.set(key,{contact:i,plane:j,anchor,created:this.time,damage:0,lambda:new Float64Array(3)});
       }
     }
-    const stiffness=7*this.strength*this.grip,alpha=1/(Math.max(.1,stiffness)*h*h);
-    const maxForce=Math.max(.006,this.body.totalMass*this.body.phys.gravity*(5+10*this.strength)*this.grip/MAX_BONDS);
+    const stiffness=(18+24*this.strength)*this.grip,alpha=1/(Math.max(.1,stiffness)*h*h);
+    const maxForce=Math.max(.010,this.body.totalMass*this.body.phys.gravity*(10+18*this.strength)*this.grip/MAX_BONDS);
     for(const [key,bond] of this.bonds){
       const c=contacts[bond.contact],p=this.sample(c,this.anchorPoint),age=this.time-bond.created;
-      const fade=Math.min(1,(1.4+this.strength*5-age)/.45),force=maxForce*Math.max(.05,fade);
+      const fade=Math.min(1,(6+this.strength*6-age)/.7);
+      const surface=this.planes[bond.plane].name==='floor'?.4:1;
+      const force=maxForce*surface*Math.max(.05,fade)*(1-bond.damage)**2*(age<.08?1.8:1);
       const dl=this.delta;let force2=0,distance2=0;
       for(let a=0;a<3;a++){
         const delta=p[a]-bond.anchor[a];distance2+=delta*delta;

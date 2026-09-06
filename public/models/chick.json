@@ -1,10 +1,10 @@
 {
   "id": "chick",
-  "sourceHash": "cbca6dcd148fae3168760902c7db1af4992d0db2ef2af39a8fbf7f0eace6a4fb",
+  "sourceHash": "eedd50cfe8eee5a7890a4a76728c47dbc3af377432ca5da4349407991b6b33c0",
   "source": "https://squishy-official.com/produit/squishy-mochi-poussin/",
-  "scale": 0.04082378185327808,
-  "bottom": -0.08474115797655044,
-  "volume": 0.00009833781939086393,
+  "scale": 0.04070415471692528,
+  "bottom": -0.08973477430283355,
+  "volume": 0.00010146898833978652,
   "face": {
     "x": 0.265,
     "y": 1.29,
@@ -20,56 +20,56 @@
   "layout": {
     "positions": {
       "offset": 0,
-      "length": 46512,
+      "length": 144222,
       "type": "Float32Array"
     },
     "normals": {
-      "offset": 186048,
-      "length": 46512,
+      "offset": 576888,
+      "length": 144222,
       "type": "Float32Array"
     },
     "indices": {
-      "offset": 372096,
-      "length": 93012,
+      "offset": 1153776,
+      "length": 288432,
       "type": "Uint32Array"
     },
     "colors": {
-      "offset": 744144,
-      "length": 46512,
+      "offset": 2307504,
+      "length": 144222,
       "type": "Float32Array"
     },
     "particles": {
-      "offset": 930192,
-      "length": 1935,
+      "offset": 2884392,
+      "length": 1944,
       "type": "Float64Array"
     },
     "tets": {
-      "offset": 945672,
-      "length": 9984,
+      "offset": 2899944,
+      "length": 10032,
       "type": "Uint32Array"
     },
     "volumes": {
-      "offset": 985608,
-      "length": 2496,
+      "offset": 2940072,
+      "length": 2508,
       "type": "Float64Array"
     },
     "bindingIds": {
-      "offset": 1005576,
-      "length": 62016,
+      "offset": 2960136,
+      "length": 192296,
       "type": "Uint32Array"
     },
     "bindingWeights": {
-      "offset": 1253640,
-      "length": 62016,
+      "offset": 3729320,
+      "length": 192296,
       "type": "Float64Array"
     },
     "tetIds": {
-      "offset": 1749768,
-      "length": 15504,
+      "offset": 5267688,
+      "length": 48074,
       "type": "Uint32Array"
     },
     "contacts": {
-      "offset": 1811784,
+      "offset": 5459984,
       "length": 768,
       "type": "Uint32Array"
     }

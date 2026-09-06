@@ -10,38 +10,38 @@ import type { EnvironmentSpec,SquishySpec } from './toy.ts';
 import { PlaygroundWorld } from './world.ts';
 import { PlaygroundUI } from './ui.ts';
 import { ToyMotion,GripIndicators } from './interaction.ts';
-import { resizePlayground } from './view.ts';
+import { resizePlayground,homeView } from './view.ts';
 import { ToySelection } from './selection.ts';
+import { SquishyGestures } from './gestures.ts';
 
 export async function startGame(stage:(s:string)=>void,fail:(error:unknown)=>void) {
   let disposed=false,bootFailure:unknown=null;
   const fatal=(error:unknown)=>{bootFailure=error;fail(error);};
   stage('Waking up your little world…');const renderer=await createRenderer(fatal);
-  renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+  renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFShadowMap;
   renderer.domElement.setAttribute('aria-label','Squishy. Use several fingers to hold different points. With a mouse, Shift + click to pin, then drag another part. Press R to reset.');
   document.getElementById('viewport')!.append(renderer.domElement);
-  const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(36,1,.001,3);
+  const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(36,1,.001,50);
   camera.position.set(.025,.102,.205);camera.lookAt(0,.034,0);
   const sound=new JellySound(),world=new PlaygroundWorld(scene),selection=new ToySelection(renderer,scene,camera);
   const clock=new FixedStepper(PHYS.step),indicators=new GripIndicators(document.getElementById('grips')!);
-  const abort=new AbortController();let input:Input|undefined,rig:ToyMotion|undefined,ui:PlaygroundUI|undefined;
+  const abort=new AbortController();let input:Input|undefined,rig:ToyMotion|undefined,ui:PlaygroundUI|undefined,gestures:SquishyGestures|undefined;
   let environment:EnvironmentSpec=ENVIRONMENTS[0],lastTime=0,lastSound=-10,resizeFrame=0,uiRequest=0,worldRequest=0;
   let reflection:THREE.RenderTarget|undefined;
   const resize=()=>resizePlayground(renderer,camera,input?.controls);
   const observer=new ResizeObserver(()=>{cancelAnimationFrame(resizeFrame);resizeFrame=requestAnimationFrame(resize);});
-  const reset=()=>{input?.recenter();selection.toy?.reset();indicators.clear();clock.reset();};
+  const reset=()=>{input?.recenter();selection.toy?.reset();if(input)homeView(input,selection.toy?.spec.family==='sticky');indicators.clear();clock.reset();};
   const release=()=>{input?.clear();indicators.clear();};
   const selectToy=async(spec:SquishySpec)=>{
     const request=++uiRequest;ui?.busy(true);
     try {
-      await selection.select(spec,()=>environment,()=>{release();renderer.domElement.style.pointerEvents='none';},toy=>{
+      await selection.select(spec,()=>environment,()=>{release();world.set(environment,spec.family==='sticky');renderer.domElement.style.pointerEvents='none';},toy=>{
         if(bootFailure)throw bootFailure;
         input?.dispose();toy.setWorld(environment);rig=new ToyMotion(toy.body);
         camera.position.set(.025,.102,.205);
-        input=new Input(camera,renderer.domElement,toy.body,toy.mesh,rig,sound,reset,()=>ui?.pinMode??false);
-        input.controls.minPolarAngle=.36;input.controls.maxPolarAngle=1.32;input.controls.minAzimuthAngle=-.72;input.controls.maxAzimuthAngle=.72;
-        input.controls.minDistance=.12;input.controls.maxDistance=.36;
-        camera.position.set(.025,.102,.205);resize();clock.reset();ui?.selectToy(spec);
+        gestures=new SquishyGestures(toy.body,spec.family==='sticky',()=>ui?.gestureMode??'squish');
+        input=new Input(camera,renderer.domElement,toy.body,toy.mesh,rig,sound,reset,()=>ui?.pinMode??false,gestures);
+        homeView(input,spec.family==='sticky');resize();clock.reset();ui?.selectToy(spec);
       });
     } finally {if(request===uiRequest){ui?.busy(false);renderer.domElement.style.pointerEvents='';}}
   };
@@ -58,7 +58,7 @@ export async function startGame(stage:(s:string)=>void,fail:(error:unknown)=>voi
       environment=spec;const request=++worldRequest;
       void selection.changeWorld(()=>{
         if(request!==worldRequest)return;
-        release();world.set(spec);selection.toy?.setWorld(spec);reset();ui?.selectWorld(spec);
+        release();world.set(spec,selection.toy?.spec.family==='sticky');selection.toy?.setWorld(spec);reset();ui?.selectWorld(spec);
       }).catch(fatal);
     },reset,release,()=>{void sound.unlock().catch(()=>{});return sound.toggle();});
     ui.selectWorld(environment);
@@ -82,10 +82,10 @@ export async function startGame(stage:(s:string)=>void,fail:(error:unknown)=>voi
           impact=Math.max(impact,toy.body.world?.impact??0);peeled+=toy.body.world?.peeled??0;
         });
         if(!toy.body.isFinite())throw new Error('The simulation produced an invalid state.');
-        if(toy.body.center.length()>.6||toy.body.center.z>.22)reset();
+        if(Math.hypot(toy.body.center.x,toy.body.center.z)>3||toy.body.center.y<-.1)reset();
         if(toy.body.surfaceDirty)toy.body.updateSurface();
-        toy.face.update(dt);input.update(dt);indicators.update(input,camera);
-        const expression=toy.face.expression;ui!.update(toy.body.grabs.length,toy.body.world?.attached??0,expression.squeeze,expression.delight);
+        toy.face.update(dt);input.update(dt);world.follow(camera.position.y);indicators.update(input,camera);
+        const expression=toy.face.expression;ui!.update(input.handles.length,toy.body.world?.attached??0,expression.squeeze,expression.delight,toy.body.world?.wallAttached??0,gestures?.aimingAtWall??false);
         if((impact>.18||peeled>1)&&time/1000-lastSound>.17){sound.contact(impact>.18?impact:.055,false);lastSound=time/1000;}
         renderer.render(scene,camera);
       }catch(error){fatal(error);}

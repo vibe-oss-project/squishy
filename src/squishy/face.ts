@@ -19,7 +19,7 @@ export class SquishyFace {
   constructor(body:SoftBody,manifest:SquishyManifest) {
     this.body=body;this.manifest=manifest;this.skin=new FaceSkin(body,true);this.expression=new SquishyExpression(body);
     const f=manifest.face;
-    const oval=(rx:number,ry:number)=>new THREE.CircleGeometry(1,32).scale(rx,ry,1);
+    const oval=(rx:number,ry:number)=>new THREE.CircleGeometry(1,64).scale(rx,ry,1);
     for(const s of [-1,1]){
       this.add(oval(f.eye,f.eyes==='sleep'?f.eye*.105:f.eye*1.16),f.ink,s*f.x,f.y,'eye',f.eye);
       if(manifest.id==='milk'){
@@ -39,7 +39,7 @@ export class SquishyFace {
         const x=(i/32*2-1)*r*1.35,t=Math.abs(x)/(r*1.35);
         points.push(new THREE.Vector3(x,(.5-Math.sin(t*Math.PI))*.7*r,0));
       }
-      this.add(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points),40,f.eye*.10,6,false),f.ink,0,f.mouthY,'mouth',r);
+      this.add(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points),72,f.eye*.10,10,false),f.ink,0,f.mouthY,'mouth',r);
       if(f.nose!=='none')this.add(new THREE.PlaneGeometry(f.eye*.13,Math.max(.015,f.noseY-f.mouthY)),f.ink,0,(f.noseY+f.mouthY)/2,'mouth',r);
     } else if(f.mouth==='tiny')this.add(new THREE.PlaneGeometry(.009,.055),f.nose,0,f.mouthY,'mouth',f.eye);
     if(manifest.id==='burger')for(const s of [-1,1])for(const y of [1.08,1.16])this.add(new THREE.PlaneGeometry(.13,.012).rotateZ(s*.10),f.ink,s*.67,y,'whisker',.06);
@@ -48,7 +48,7 @@ export class SquishyFace {
   }
   private add(geometry:THREE.BufferGeometry,color:string,cx:number,cy:number,kind:string,radius:number,dynamicBlush=false) {
     const key=color+(dynamicBlush?' fade':'');let material=this.materials.get(key);
-    if(!material){material=new THREE.MeshBasicNodeMaterial({color,side:THREE.DoubleSide,transparent:dynamicBlush,opacity:dynamicBlush?0:1,depthWrite:!dynamicBlush});this.materials.set(key,material);}
+    if(!material){material=new THREE.MeshBasicNodeMaterial({color,toneMapped:false,side:THREE.DoubleSide,transparent:dynamicBlush,opacity:dynamicBlush?0:1,depthWrite:!dynamicBlush});this.materials.set(key,material);}
     const rest=new Float32Array(geometry.attributes.position.array);
     (geometry.attributes.position as THREE.BufferAttribute).setUsage(THREE.DynamicDrawUsage);
     const mesh=new THREE.Mesh(geometry,material);mesh.frustumCulled=false;mesh.renderOrder=2;this.group.add(mesh);
