@@ -1,0 +1,77 @@
+{
+  "id": "milk",
+  "sourceHash": "cbca6dcd148fae3168760902c7db1af4992d0db2ef2af39a8fbf7f0eace6a4fb",
+  "source": "https://squishy-official.com/produit/squishy-brique-de-lait/",
+  "scale": 0.033254156769596206,
+  "bottom": 0.029999999999999957,
+  "volume": 0.00007789028021377813,
+  "face": {
+    "x": 0.3,
+    "y": 1.22,
+    "eye": 0.081,
+    "noseY": 1.1,
+    "mouthY": 1.07,
+    "mouth": "w",
+    "eyes": "round",
+    "ink": "#27252c",
+    "nose": "none",
+    "blush": 0.07
+  },
+  "layout": {
+    "positions": {
+      "offset": 0,
+      "length": 60816,
+      "type": "Float32Array"
+    },
+    "normals": {
+      "offset": 243264,
+      "length": 60816,
+      "type": "Float32Array"
+    },
+    "indices": {
+      "offset": 486528,
+      "length": 121620,
+      "type": "Uint32Array"
+    },
+    "colors": {
+      "offset": 973008,
+      "length": 60816,
+      "type": "Float32Array"
+    },
+    "particles": {
+      "offset": 1216272,
+      "length": 1455,
+      "type": "Float64Array"
+    },
+    "tets": {
+      "offset": 1227912,
+      "length": 7512,
+      "type": "Uint32Array"
+    },
+    "volumes": {
+      "offset": 1257960,
+      "length": 1878,
+      "type": "Float64Array"
+    },
+    "bindingIds": {
+      "offset": 1272984,
+      "length": 81088,
+      "type": "Uint32Array"
+    },
+    "bindingWeights": {
+      "offset": 1597336,
+      "length": 81088,
+      "type": "Float64Array"
+    },
+    "tetIds": {
+      "offset": 2246040,
+      "length": 20272,
+      "type": "Uint32Array"
+    },
+    "contacts": {
+      "offset": 2327128,
+      "length": 768,
+      "type": "Uint32Array"
+    }
+  }
+}

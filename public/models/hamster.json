@@ -1,0 +1,77 @@
+{
+  "id": "hamster",
+  "sourceHash": "cbca6dcd148fae3168760902c7db1af4992d0db2ef2af39a8fbf7f0eace6a4fb",
+  "source": "https://squishy-official.com/produit/squishy-hamster-kawaii/",
+  "scale": 0.03196802711154789,
+  "bottom": -0.019836511799463045,
+  "volume": 0.00007258430218816815,
+  "face": {
+    "x": 0.33,
+    "y": 1.14,
+    "eye": 0.075,
+    "noseY": 1,
+    "mouthY": 0.96,
+    "mouth": "tiny",
+    "eyes": "sleep",
+    "ink": "#27252c",
+    "nose": "#734b35",
+    "blush": 0.04
+  },
+  "layout": {
+    "positions": {
+      "offset": 0,
+      "length": 64512,
+      "type": "Float32Array"
+    },
+    "normals": {
+      "offset": 258048,
+      "length": 64512,
+      "type": "Float32Array"
+    },
+    "indices": {
+      "offset": 516096,
+      "length": 129012,
+      "type": "Uint32Array"
+    },
+    "colors": {
+      "offset": 1032144,
+      "length": 64512,
+      "type": "Float32Array"
+    },
+    "particles": {
+      "offset": 1290192,
+      "length": 1554,
+      "type": "Float64Array"
+    },
+    "tets": {
+      "offset": 1302624,
+      "length": 7560,
+      "type": "Uint32Array"
+    },
+    "volumes": {
+      "offset": 1332864,
+      "length": 1890,
+      "type": "Float64Array"
+    },
+    "bindingIds": {
+      "offset": 1347984,
+      "length": 86016,
+      "type": "Uint32Array"
+    },
+    "bindingWeights": {
+      "offset": 1692048,
+      "length": 86016,
+      "type": "Float64Array"
+    },
+    "tetIds": {
+      "offset": 2380176,
+      "length": 21504,
+      "type": "Uint32Array"
+    },
+    "contacts": {
+      "offset": 2466192,
+      "length": 768,
+      "type": "Uint32Array"
+    }
+  }
+}

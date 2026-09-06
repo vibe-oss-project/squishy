@@ -18,7 +18,8 @@ export function inverse3(m) {
 }
 
 export class SoftBody {
-  constructor(cage) {
+  constructor(cage,phys=PHYS) {
+    this.phys=phys;this.world=null;
     this.cage=cage;this.x=cage.pos.slice();this.rest=cage.pos.slice();
     this.previous=this.x.slice();this.candidate=this.x.slice();this.velocity=new Float64Array(this.x.length);
     this.mass=new Float64Array(this.x.length/3);this.inverseMass=new Float64Array(this.mass.length);
@@ -38,7 +39,7 @@ export class SoftBody {
         gradients[k]=-inv[k]-inv[3+k]-inv[6+k];
       }
       this.elements.push({ids,offsets,volume,gradients,inverseRestDet:1/determinant(...dm),lambdaD:0,lambdaH:0,lambdaB:0});
-      for(const id of ids){this.mass[id]+=PHYS.density*volume/4;this.nodalVolume[id]+=volume;}
+      for(const id of ids){this.mass[id]+=this.phys.density*volume/4;this.nodalVolume[id]+=volume;}
       for(let i=0;i<4;i++)for(let j=i+1;j<4;j++) {
         const a=Math.min(ids[i],ids[j]),b=Math.max(ids[i],ids[j]),key=`${a},${b}`;
         if(!uniqueEdges.has(key)){uniqueEdges.add(key);this.edges.push([a,b]);}
@@ -76,7 +77,7 @@ export class SoftBody {
     const c0=ee*ii-ff*hh,c1=ff*gg-d*ii,c2=d*hh-ee*gg;
     const c3=c*hh-b*ii,c4=a*ii-c*gg,c5=b*gg-a*hh;
     const c6=b*ff-c*ee,c7=c*d-a*ff,c8=a*ee-b*d,J=a*c0+b*c1+c*c2;
-    const alphaD=1/(PHYS.shear*e.volume*h*h),alphaH=1/(PHYS.bulk*e.volume*h*h);
+    const alphaD=1/(this.phys.shear*e.volume*h*h),alphaH=1/(this.phys.bulk*e.volume*h*h);
     let dd=alphaD,hhMass=alphaH,dh=0;
     for(let v=0;v<4;v++) {
       const j=v*3,x=g[j],y=g[j+1],z=g[j+2],w=this.inverseMass[e.ids[v]];
@@ -87,7 +88,7 @@ export class SoftBody {
     // Same energy as the reference:
     // W=mu/2*(||F||²-3)+K/2*(J-1-mu/K)².
     // Solve its two constraints together. At F=I their forces cancel exactly.
-    const rd=-norm-alphaD*e.lambdaD,rh=-(J-1-PHYS.shear/PHYS.bulk)-alphaH*e.lambdaH;
+    const rd=-norm-alphaD*e.lambdaD,rh=-(J-1-this.phys.shear/this.phys.bulk)-alphaH*e.lambdaH;
     const denominator=dd*hhMass-dh*dh;
     const dlD=(rd*hhMass-rh*dh)/denominator,dlH=(rh*dd-rd*dh)/denominator;
     e.lambdaD+=dlD;e.lambdaH+=dlH;
@@ -129,7 +130,7 @@ export class SoftBody {
     const alpha=1/(90*h*h);denominator+=alpha;
     for(let axis=0;axis<3;axis++) {
       const C=p.getComponent(axis)-grab.target.getComponent(axis),dl=(-C-alpha*grab.lambda[axis])/denominator;
-      const next=clamp(grab.lambda[axis]+dl,-PHYS.maxGrabForce*h*h,PHYS.maxGrabForce*h*h);
+      const next=clamp(grab.lambda[axis]+dl,-this.phys.maxGrabForce*h*h,this.phys.maxGrabForce*h*h);
       const change=next-grab.lambda[axis];grab.lambda[axis]=next;
       for(const [id,w] of grab.weights)this.x[id*3+axis]+=this.inverseMass[id]*w*change;
     }
@@ -137,8 +138,8 @@ export class SoftBody {
   solveContacts() {
     for(const c of this.contacts) {
       let y=0;for(const [id,w] of c.weights)y+=this.x[id*3+1]*w;
-      if(y>=PHYS.floor)continue;
-      const depth=PHYS.floor-y;c.normal+=depth;
+      if(y>=this.phys.floor)continue;
+      const depth=this.phys.floor-y;c.normal+=depth;
       for(const [id,w] of c.weights){this.x[id*3+1]+=this.inverseMass[id]*w*depth/c.denominator;this.contact[id]+=depth*w;}
     }
   }
@@ -217,7 +218,7 @@ export class SoftBody {
   step(h) {
     if(!this.kernel)return this.stepJS(h);
     if(this.grab)this.wake();if(this.sleeping)return false;
-    this.kernel.step(h,PHYS);
+    this.kernel.step(h,this.phys);
     const meta=this.kernel.meta;this.grounded=meta[0]!==0;this.lastMinJacobian=meta[1];this.limitedSteps+=meta[2];this.stepFraction=meta[14];
     this.center.set(meta[3],meta[4],meta[5]);
     for(const grab of this.grabs) {
@@ -225,7 +226,7 @@ export class SoftBody {
       for(const [id,w] of grab.weights){point.x+=this.x[id*3]*w;point.y+=this.x[id*3+1]*w;point.z+=this.x[id*3+2]*w;}
     }
     const rms=Math.sqrt(2*meta[6]/this.totalMass);
-    this.quietTime=this.canSleep&&!this.grab&&this.grounded&&this.stepFraction>=.999&&rms<.005?this.quietTime+h:0;
+    this.quietTime=this.canSleep&&!this.world?.attached&&!this.grab&&this.grounded&&this.stepFraction>=.999&&rms<.005?this.quietTime+h:0;
     if(this.quietTime>.45){this.sleeping=true;this.velocity.fill(0);}
     this.surfaceDirty=true;return true;
   }
@@ -236,35 +237,38 @@ export class SoftBody {
     old.set(x);this.contact.fill(0);
     const air=Math.exp(-.025*h);
     for(let i=0;i<v.length;i++)v[i]*=air;
-    for(let i=1;i<v.length;i+=3)v[i]-=PHYS.gravity*h;
+    for(let i=1;i<v.length;i+=3)v[i]-=this.phys.gravity*h;
     for(const c of this.contacts){c.normal=0;c.incoming=0;for(const [id,w] of c.weights)c.incoming+=v[id*3+1]*w;}
+    this.world?.begin(h);
     for(let i=0;i<x.length;i++)x[i]+=v[i]*h;
     for(const e of this.elements)e.lambdaD=e.lambdaH=e.lambdaB=0;
     for(const grab of this.grabs)grab.lambda.fill(0);
-    for(let iteration=0;iteration<PHYS.iterations;iteration++) {
+    for(let iteration=0;iteration<this.phys.iterations;iteration++) {
       for(let n=0;n<this.elements.length;n++) {
         const e=this.elements[(iteration&1)?this.elements.length-1-n:n];this.solveElastic(e,h);this.solveBarrier(e);
       }
-      this.solveGrab(h);this.solveContacts();
+      this.solveGrab(h);if(this.world)this.world.solve(h);else this.solveContacts();
     }
     this.grounded=false;
-    for(const c of this.contacts)if(c.normal>0) {
+    for(const c of this.world?[]:this.contacts)if(c.normal>0) {
       this.grounded=true;let dx=0,dz=0;
       for(const [id,w] of c.weights){dx+=(x[id*3]-old[id*3])*w;dz+=(x[id*3+2]-old[id*3+2])*w;}
-      const tangent=Math.hypot(dx,dz),friction=tangent<PHYS.staticFriction*c.normal?1:Math.min(1,PHYS.dynamicFriction*c.normal/(tangent+1e-20));
+      const tangent=Math.hypot(dx,dz),friction=tangent<this.phys.staticFriction*c.normal?1:Math.min(1,this.phys.dynamicFriction*c.normal/(tangent+1e-20));
       for(const [id,w] of c.weights){const s=this.inverseMass[id]*w*friction/c.denominator;x[id*3]-=dx*s;x[id*3+2]-=dz*s;}
     }
+    if(this.world)this.grounded=this.world.frictionPass()!==0;
     this.preserveOrientation();
     for(let i=0;i<v.length;i++)v[i]=(x[i]-old[i])/h;
-    for(const c of this.contacts)if(c.normal>0&&c.incoming<0) {
+    for(const c of this.world?[]:this.contacts)if(c.normal>0&&c.incoming<0) {
       let vy=0;for(const [id,w] of c.weights)vy+=v[id*3+1]*w;
-      const bounce=c.incoming<-.18?-c.incoming*PHYS.restitution:0;
+      const bounce=c.incoming<-.18?-c.incoming*this.phys.restitution:0;
       const impulse=Math.max(0,bounce-vy)/c.denominator;
       for(const [id,w] of c.weights)v[id*3+1]+=this.inverseMass[id]*w*impulse;
     }
+    this.world?.velocityPass();
     // Equal/opposite axial viscosity dissipates strain energy without damping
     // rigid-body translation or creating a continuously animated wobble.
-    const damping=1-Math.exp(-PHYS.damping*h*.35);
+    const damping=1-Math.exp(-this.phys.damping*h*.35);
     for(const [a,b] of this.edges) {
       const ia=a*3,ib=b*3,dx=x[ib]-x[ia],dy=x[ib+1]-x[ia+1],dz=x[ib+2]-x[ia+2],len=Math.hypot(dx,dy,dz);
       if(len<1e-9)continue;
@@ -276,7 +280,7 @@ export class SoftBody {
     const rms=Math.sqrt(2*this.energy()/this.totalMass);
     // Sub-pixel residual contact chatter is put to sleep only after the real
     // oscillation has dissipated (5 mm/s RMS for 0.45 s at this 7 cm scale).
-    this.quietTime=this.canSleep&&!this.grab&&this.grounded&&this.stepFraction>=.999&&rms<.005?this.quietTime+h:0;
+    this.quietTime=this.canSleep&&!this.world?.attached&&!this.grab&&this.grounded&&this.stepFraction>=.999&&rms<.005?this.quietTime+h:0;
     if(this.quietTime>.45){this.sleeping=true;v.fill(0);}
     this.updateCenter();this.surfaceDirty=true;return true;
   }
@@ -308,14 +312,14 @@ export class SoftBody {
   }
   elasticEnergy() {
     let energy=0;
-    for(const e of this.elements){const f=this.deformation(e);let norm=0;for(const x of f)norm+=x*x;const j=matrixDet(f);energy+=e.volume*(.5*PHYS.shear*(norm-3)+.5*PHYS.bulk*(j-1-PHYS.shear/PHYS.bulk)**2-.5*PHYS.shear**2/PHYS.bulk);}
+    for(const e of this.elements){const f=this.deformation(e);let norm=0;for(const x of f)norm+=x*x;const j=matrixDet(f);energy+=e.volume*(.5*this.phys.shear*(norm-3)+.5*this.phys.bulk*(j-1-this.phys.shear/this.phys.bulk)**2-.5*this.phys.shear**2/this.phys.bulk);}
     return Math.max(0,energy);
   }
   volumeRatio() {
     let volume=0;for(const e of this.elements)volume+=matrixDet(this.deformation(e))*e.volume;return volume/this.cage.totalVolume;
   }
   wake(){this.sleeping=false;this.quietTime=0;}
-  reset(){this.x.set(this.rest);this.previous.set(this.rest);this.velocity.fill(0);this.grab=null;this.grounded=false;this.stepFraction=1;if(this.kernel)this.kernel.meta[14]=1;this.wake();this.updateSurface();}
+  reset(){this.world?.reset();this.x.set(this.rest);this.previous.set(this.rest);this.velocity.fill(0);this.grab=null;this.grounded=false;this.stepFraction=1;if(this.kernel)this.kernel.meta[14]=1;this.wake();this.updateSurface();}
   nudge(){this.wake();for(let i=0;i<this.mass.length;i++){const j=i*3;this.velocity[j]+=.095+(this.x[j+1]-this.center.y)*3;this.velocity[j+1]+=.12;this.velocity[j+2]+=.025;}}
   isFinite(){for(let i=0;i<this.x.length;i++)if(!Number.isFinite(this.x[i])||!Number.isFinite(this.velocity[i])||Math.abs(this.x[i])>100000)return false;return true;}
 }

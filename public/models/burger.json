@@ -1,0 +1,77 @@
+{
+  "id": "burger",
+  "sourceHash": "cbca6dcd148fae3168760902c7db1af4992d0db2ef2af39a8fbf7f0eace6a4fb",
+  "source": "https://squishy-official.com/produit/squishy-hamburger-chat/",
+  "scale": 0.03882171943283622,
+  "bottom": -0.029992626106173762,
+  "volume": 0.00017942463330231778,
+  "face": {
+    "x": 0.44,
+    "y": 1.22,
+    "eye": 0.075,
+    "noseY": 1.25,
+    "mouthY": 1.13,
+    "mouth": "w",
+    "eyes": "round",
+    "ink": "#27252c",
+    "nose": "#27252c",
+    "blush": 0
+  },
+  "layout": {
+    "positions": {
+      "offset": 0,
+      "length": 89352,
+      "type": "Float32Array"
+    },
+    "normals": {
+      "offset": 357408,
+      "length": 89352,
+      "type": "Float32Array"
+    },
+    "indices": {
+      "offset": 714816,
+      "length": 178704,
+      "type": "Uint32Array"
+    },
+    "colors": {
+      "offset": 1429632,
+      "length": 89352,
+      "type": "Float32Array"
+    },
+    "particles": {
+      "offset": 1787040,
+      "length": 2238,
+      "type": "Float64Array"
+    },
+    "tets": {
+      "offset": 1804944,
+      "length": 12000,
+      "type": "Uint32Array"
+    },
+    "volumes": {
+      "offset": 1852944,
+      "length": 3000,
+      "type": "Float64Array"
+    },
+    "bindingIds": {
+      "offset": 1876944,
+      "length": 119136,
+      "type": "Uint32Array"
+    },
+    "bindingWeights": {
+      "offset": 2353488,
+      "length": 119136,
+      "type": "Float64Array"
+    },
+    "tetIds": {
+      "offset": 3306576,
+      "length": 29784,
+      "type": "Uint32Array"
+    },
+    "contacts": {
+      "offset": 3425712,
+      "length": 768,
+      "type": "Uint32Array"
+    }
+  }
+}

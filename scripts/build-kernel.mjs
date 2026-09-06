@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { readFileSync, writeFileSync, mkdtempSync, rmSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -22,5 +22,6 @@ try {
   writeFileSync(file,next);
   console.log(`Embedded ${readFileSync(wasm).byteLength} byte WebAssembly kernel in ${file}`);
 } finally {
-  rmSync(dir,{recursive:true,force:true});
+  try{execFileSync('trash',[dir]);}
+  catch{console.warn(`Temporary kernel build retained at ${dir} (trash is unavailable).`);}
 }

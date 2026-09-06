@@ -1,0 +1,77 @@
+{
+  "id": "panda",
+  "sourceHash": "cbca6dcd148fae3168760902c7db1af4992d0db2ef2af39a8fbf7f0eace6a4fb",
+  "source": "https://squishy-official.com/produit/squishy-panda-original/",
+  "scale": 0.030391882651834932,
+  "bottom": -0.10447258155195487,
+  "volume": 0.00008587130904089173,
+  "face": {
+    "x": 0.36,
+    "y": 1.36,
+    "eye": 0.085,
+    "noseY": 1.27,
+    "mouthY": 1.2,
+    "mouth": "w",
+    "eyes": "round",
+    "ink": "#27252c",
+    "nose": "#27252c",
+    "blush": 0.075
+  },
+  "layout": {
+    "positions": {
+      "offset": 0,
+      "length": 81006,
+      "type": "Float32Array"
+    },
+    "normals": {
+      "offset": 324024,
+      "length": 81006,
+      "type": "Float32Array"
+    },
+    "indices": {
+      "offset": 648048,
+      "length": 162000,
+      "type": "Uint32Array"
+    },
+    "colors": {
+      "offset": 1296048,
+      "length": 81006,
+      "type": "Float32Array"
+    },
+    "particles": {
+      "offset": 1620072,
+      "length": 1779,
+      "type": "Float64Array"
+    },
+    "tets": {
+      "offset": 1634304,
+      "length": 9000,
+      "type": "Uint32Array"
+    },
+    "volumes": {
+      "offset": 1670304,
+      "length": 2250,
+      "type": "Float64Array"
+    },
+    "bindingIds": {
+      "offset": 1688304,
+      "length": 108008,
+      "type": "Uint32Array"
+    },
+    "bindingWeights": {
+      "offset": 2120336,
+      "length": 108008,
+      "type": "Float64Array"
+    },
+    "tetIds": {
+      "offset": 2984400,
+      "length": 27002,
+      "type": "Uint32Array"
+    },
+    "contacts": {
+      "offset": 3092408,
+      "length": 768,
+      "type": "Uint32Array"
+    }
+  }
+}

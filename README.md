@@ -1,115 +1,109 @@
-# Jelly Baby
+# Squishy Playground
 
-A WebGPU-only, Three.js r185 playground. The supplied EXR lights the scene; the
-wood maps repeat every 2.5 metres. The baby is modelled at approximately 7 cm.
+A little world of softness. Pick one of ten cute 3D Squishy, squeeze it between your fingers, stretch it, and give it a gentle throw. Classic Squishy compress and spring back; sticky Mochi cling to the floor and walls until you peel them away. Five pastel worlds give each little friend somewhere to play.
 
-![Jelly Baby](assets/screenshot.jpeg)
+**Built on [Jelly Baby](https://github.com/scottstts/Jelly-Baby), created by [Scott — @scottstts](https://github.com/scottstts).** Scott's volumetric soft-body physics, grabbing interactions, procedural sound, and rendering work are the foundation of this adaptation. Please visit **[his original interactive demo](https://jelly.scottsun.io)** and **[his repository](https://github.com/scottstts/Jelly-Baby)**. His Git history is preserved here. [Full credits](CREDITS.md).
+
+**[Play live →](https://squishy-snowy.vercel.app)** · [Repository](https://github.com/vibe-oss-project/squishy) · [Implementation notes](docs/squishy-implementation.md)
+
+## The idea
+
+This is a small tactile playground: no score, no timer, just expressive little toys that react to how you hold them. Their eyes blink and squint, and their smiles respond to stretching, squeezing, impacts, and release.
+
+The toy references and visual inspiration come from [Squishy Official](https://squishy-official.com/). The interface uses Fredoka, Lexend, the store's sky blue **#84D1FB**, and a complementary pastel palette. This is an independent adaptation, with product and asset attribution in [CREDITS.md](CREDITS.md).
+
+## Ten little friends
+
+| Classic — soft, without adhesion | Mochi — sticky in the simulation |
+| --- | --- |
+| [Original Panda](https://squishy-official.com/produit/squishy-panda-original/) | [Fluffy Cat](https://squishy-official.com/produit/squishy-mochi-chat-fluffy/) |
+| [Kawaii Hamster](https://squishy-official.com/produit/squishy-hamster-kawaii/) | [Mochi Bunny](https://squishy-official.com/produit/squishy-mochi-lapin/) |
+| [Sleepy Cat](https://squishy-official.com/produit/squishy-chat-endormi/) | [Mochi Seal](https://squishy-official.com/produit/squishy-mochi-phoque/) |
+| [Cat Burger](https://squishy-official.com/produit/squishy-hamburger-chat/) | [Mochi Chick](https://squishy-official.com/produit/squishy-mochi-poussin/) |
+| [Milk Carton](https://squishy-official.com/produit/squishy-brique-de-lait/) | [Mochi Hamster](https://squishy-official.com/produit/squishy-mochi-hamster/) |
+
+Each toy has its own closed surface mesh, volumetric cage, colors, face, and material preset. The selected variants include an orange hamster and burger, a pink milk carton, and a very pale pink bunny. Models load on demand; only one toy is simulated at a time.
+
+The sculptures interpret the available photographs, including unseen surfaces. They are not verified pixel-perfect replicas. Material settings are tuned for play, not laboratory measurements; the sticky classification describes this simulation and does not certify that the store's products stick to walls.
+
+## How to play
+
+- **Touch screen:** place several fingers on different parts. Pull apart to stretch or move together to squeeze, horizontally or from top to bottom. Up to 16 independent holds are supported; lifting one finger keeps the others in place. A pen and finger can work together.
+- **Mouse:** drag to grab and throw. **Shift + click** pins a point so you can drag another part against it. The **Pin a point** button does the same. Shift + click a pin again to remove it.
+- **Trackpad:** use pins for multiple holds. Browsers do not expose separate trackpad fingers as individual points on the toy.
+- **Camera:** drag the background to rotate; scroll or pinch the background to zoom. The camera stays still while you hold the toy.
+- **Keyboard:** **R** resets, **Esc** releases all holds, and **Space** makes a little hop. **WASD / arrow keys** give small nudges along the floor.
+
+Holds are cleared on cancellation, loss of focus, and changes of toy or world. Sound starts after a user gesture and can be muted.
+
+## Five little worlds
+
+**Cloud Nine**, **Mochi Room**, **Candy Break**, **Vanilla Beach**, and **Starry Dream** are available from the world picker. Each has a floor and three physical walls, with its own friction and adhesion settings. Wall illustrations sit behind the contact planes. A toy thrown far outside the play area returns to the center.
+
+## Run locally
+
+Use **Node.js 24 LTS** and npm.
 
 ```sh
+npm ci
 npm run dev
 ```
 
-WASD / arrow keys move relative to the camera. Space hops. Drag the table to
-orbit, scroll or pinch to zoom, and drag the baby to stretch and throw. The camera
-holds still during a grab and follows smoothly after release. Touch controls
-appear on mobile as a joystick and hop control. R resets. Sound starts with the
-first interaction.
+The game requires **WebGPU** on HTTPS or localhost. Compatibility on phones, iPads, and computers depends on the browser, operating system, and GPU. Startup checks report unsupported devices and GPU failures explicitly; there is no WebGL fallback.
 
-Physics is a foundation for plausible appearance and behavior, balanced against
-real-time CPU/GPU responsiveness. Preserve the established look and feel; use
-bounded work and perceptually close approximations where full simulation causes lag.
+## Deploy on Vercel
 
-## Implementation
+Import this repository into a new Vercel project. The checked-in `vercel.json` configures **Vite**, `npm ci`, `npm run build`, and the `dist` output directory. Select **Node.js 24.x** and **main** as the production branch. No environment variables or backend services are required. Generated models and the WebAssembly kernel are included in the repository.
 
-- `src/physics/soft-body.js` uses the reference's neo-Hookean energy with coupled
-  XPBD constraints, an orientation barrier, axial viscosity, Coulomb contact and
-  force-limited barycentric grabbing. Coupling the elastic constraints eliminates
-  artificial rest stress; whole-step backtracking prevents inverted elements.
-  The 240 Hz fixed step matches `refs/jelly-webgpu.html`. Gravity is deliberately
-  reduced to 2.4 m/s², with a smaller jump impulse for a gentle, floating hop.
-  The exact same solver is executed by a small embedded WebAssembly kernel so the
-  4,026 tetrahedra and full-resolution surface no longer monopolize the JS main
-  thread. A JavaScript fallback retains the same equations if WebAssembly is
-  unavailable. Catch-up work normally yields after 8 ms or six substeps; during
-  an active grab the wall-clock cutoff is disabled while the six-step cap remains,
-  so pointer response cannot lose ordinary 240 Hz samples under a transient frame spike.
-- The displayed body is still the exact marching-tetrahedra mesh from
-  `refs/jelly_baby_mesh.html`, uniformly scaled to 7 cm: 72,234 indexed vertices,
-  144,464 triangles and no open edges. `npm run build:model` regenerates its binary
-  asset and source hash. A regular tetrahedral cage deforms those vertices through
-  barycentric embedding; contacts lie on the actual visible surface. The original
-  smooth SDF normals follow the deformation. Position and normal BufferAttributes
-  remain the fully deformed CPU surface used by rendering, picking and facial
-  attachment; there is no lower-poly or shader-only visual substitute. The face
-  follows the skin. Details are
-  tessellated, kept outside the skin, and drawn after transmission so they cannot
-  contaminate the opaque refraction buffer and produce duplicate images.
-- `src/game/locomotion.ts` supplies a powered posture and gait through nodal
-  forces and jump impulses. It does not replace particle positions with animation.
-  The muscles release completely during a grab and recover gradually afterward.
-  Gait forces stop when movement stops; damping dissipates recoil and the settled
-  body sleeps until the next interaction.
-- Fresnel transmission, internal reflection, spectral absorption and optical
-  thickness run in a worker on a 20,176-triangle optical proxy sampled from the
-  same implicit model. The full visible mesh stays intact. RGB shares one refracted
-  path; thickness is interpolated back to the visible vertices through a precomputed
-  surface mapping. Compact cage snapshots replace full-mesh transfers.
-  There is one outstanding snapshot at a time, with at most 30 requests per second.
-  Caustics publish before thickness finishes, camera-only updates reuse the light
-  field, and idle frames do no optical work. Translation compensation keeps the light field
-  attached while the worker traces the changing shape. A 256² RGBA16F receiver
-  preserves bright caustic flux; vertical motion reprojects the directional shadow.
-  Connected refracted beams replace point splats. Their incident flux is divided
-  by the landed footprint and integrated over each receiver pixel, including
-  subpixel footprints and overlapping folds, without a caustic blur kernel.
-  Pixel clipping reuses scratch storage and skips empty or fully covered regions.
-- The supplied HDR window is reoriented above the set, boosted, and balanced
-  against reduced room fill. Window direction, color, and flux are then measured
-  from that same edited HDR, combining adjacent panes into one emitter.
-  The floor removes that source's occluded diffuse contribution and reconstructs
-  transmitted flux. Environment illumination supplies the rest, without a second
-  light duplicating the window. The environment is not drawn as a background.
-- Linear HDR compositing adds restrained highlight bloom and a subtle grade,
-  followed by a single AgX tone/output transform.
-- Grab stencils reconstruct the selected surface point exactly. Pointer smoothing
-  is short and force remains limited by XPBD. Dragging against the floor intersects
-  the pointer ray with the table, preserving screen alignment.
-  Hover uses a bounding-box cursor hint; a real grab still picks the exact mesh.
-- Procedural contact audio combines damped membrane modes and a short filtered
-  contact transient. No audio files or remote resources are required.
+With the Git repository connected, pushes to `main` deploy to production and pull requests can create previews. See [Vercel's GitHub integration documentation](https://vercel.com/docs/git/vercel-for-github).
 
-Optical approximations include screen-space view transmission, the optical proxy,
-shared RGB ray paths, a finite ray grid, one measured window direction, a planar receiver, and omitted beams at visibility
-discontinuities. The simulation has no self-collision or tearing. The character
-uses powered posture forces to stand and walk.
+## Physics and rendering
 
-## Verification
+- **Three.js r185, WebGPU, and TSL**, with Vite 8 and TypeScript/JavaScript.
+- Volumetric neo-Hookean elasticity and XPBD constraints at **240 Hz**. Classics are more compressible and damped; Mochi are denser and nearly incompressible.
+- Distributed adhesion with local contact capture, compliant force-limited bonds, aging, peeling, and a reattachment cooldown. Gravity remains active.
+- The C/WebAssembly solver invokes the same contact system as the JavaScript path between constraint iterations.
+- Eyes, mouths, and small facial details follow the deformed surface.
+- Bounded simulation work: at most **768 contact samples**, **40 adhesive bonds**, and **12 physics substeps per frame**.
+- A strict **4-million-pixel** drawing-buffer cap, including effective DPR values below 1 on large displays. Startup and fatal GPU errors stop the game and show diagnostics.
+
+The new toys use matte and satin materials. Scott's original jelly optics, source modules, assets, and regression tests remain in the repository.
+
+## Checks
 
 ```sh
 npm run lint
 npm run typecheck
+npm run test:squishies
+npm run test:multitouch
+npm run test:selection
+npm run test:collisions
 npm run test:physics
 npm run test:performance
+npm run test:faces
 npm run build
 ```
 
-The numerical checks cover settling upright, volume retention, walking, turning,
-jumping, stretching, throwing, recovery, HDR source measurement, and refracted
-light reaching the floor. Regressions also check roundness, airborne duration,
-facial render ordering, grab projection before/after deformation, floor targeting,
-and caustic color/flux, subpixel beam conservation, element orientation, zero-force
-rest energy, complete idle sleep, and the generated model's source hash. Performance
-regressions check bounded catch-up, active-grab step retention, byte-for-byte
-visible position/normal equivalence with the original embedding, proxy
-flux/thickness agreement, and the actual worker's transferable two-stage response
-and camera-only reuse.
+Tests cover closed meshes, opposing grabs, compression, deformed face attachment, wall adhesion and peeling, bond aging, all five surface presets, and JavaScript/WebAssembly parity. Interaction tests cover independent touch holds, mouse pins, and pen + touch. Selection tests cover cancellation, stale requests, serialized compilation, and resource disposal.
 
-`npm run benchmark` reports CPU timings for walking and a severe stretch. The
-optimization is intended to reduce main-thread solver/surface time without changing
-mesh resolution, material parameters, grab constants, XPBD iteration order, or the
-resulting visible positions/normals.
+Numerical tests and a production build do not validate visual likeness, GPU frame rates, or simultaneous gestures on a physical phone or iPad. Those need hands-on testing. Discrete surface contacts can show small temporary penetration during fast corner impacts; see the [implementation notes](docs/squishy-implementation.md).
 
-Per project instructions, no development server or browser inspection was run
-during implementation. GPU shader execution, visual quality, touch feel, and sound
-still need inspection in the target browser. WebGL fallback is disabled, and GPU
-startup/runtime failures are surfaced with diagnostics.
+## Make it your own
+
+- `src/squishy/catalog.js`: collection, physical presets, product links, and world palettes.
+- `src/squishy/shapes.js`: implicit sculptures, color regions, and facial landmarks.
+- `src/physics/sticky-world.js`: collisions, adhesive bonds, and peeling.
+- `src/squishy/`: rendering, faces, worlds, input presentation, selection, and UI.
+
+```sh
+npm run build:squishies
+npm run test:squishies
+```
+
+The generated files in `public/models/` are ready to use. `npm run build:model` rebuilds only the historical Jelly Baby model. `npm run build:kernel` regenerates the embedded physics kernel and requires a Clang toolchain with `wasm32` support; choose it with `CLANG=/path/to/clang`. The current kernel was built with [wasi-sdk 34](https://github.com/WebAssembly/wasi-sdk/releases/tag/wasi-sdk-34).
+
+## Provenance
+
+[Full credits](CREDITS.md) · [Initial repository audit](docs/repository-audit.md) · [Initial physics proposal](docs/squishy-physics.md) · [Unmodified original README](docs/jelly-baby-original-readme.md).
+
+The original revision did not include a license file. This adaptation preserves attribution and does not declare a license on Scott's behalf. Font licenses are included alongside the font files.

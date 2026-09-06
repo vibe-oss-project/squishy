@@ -10,7 +10,7 @@ import { loadModel } from './load-model.mjs';
 const document=new globalThis.EventTarget();
 document.querySelector=()=>null;document.querySelectorAll=()=>[];
 globalThis.document=document;globalThis.window=new globalThis.EventTarget();
-function setup(useJS=false) {
+function setup(useJS=false,pinMode=()=>false) {
   const body=new SoftBody(loadModel());assert(body.kernel,'accelerated solver is available');
   if(useJS)body.kernel=null;
   const canvas=new globalThis.EventTarget(),captured=new Set(),classes=new Set();
@@ -24,7 +24,7 @@ function setup(useJS=false) {
     input.end(event(id,'lostpointercapture'));
   };
   const camera=new PerspectiveCamera(40,400/600,.001,10);camera.position.set(0,.12,.22);
-  const input=new Input(camera,canvas,body,new Mesh(body.surface.geometry),new Locomotion(body),{unlock:async()=>{}},()=>{});
+  const input=new Input(camera,canvas,body,new Mesh(body.surface.geometry),new Locomotion(body),{unlock:async()=>{}},()=>{},pinMode);
   const event=(id,type='pointerdown',dx=0,dy=0,pointerType='touch')=>{
     const point=new Vector3(id===1?-.009:.009,.045,0).project(camera);
     return {pointerId:id,pointerType,button:0,buttons:1,type,
@@ -102,4 +102,27 @@ for(const cleanup of ['blur','visibility','reset','escape','dispose','lostcaptur
   assert.equal(body.grabs.length,0,'missing mouse-up recovery is preserved');
   input.dispose();
 }
-console.log('Multitouch input, independent release, cleanup, and native/JS physics passed.',{maxDifference});
+for(const useButton of [false,true]) {
+  let armed=useButton;
+  const {input,body,captured,event,step}=setup(false,()=>armed);
+  input.begin({...event(1,'pointerdown',0,0,'mouse'),shiftKey:!useButton});
+  assert.equal(body.grabs.length,1,'Shift click or pin mode creates an anchor');
+  assert.equal(captured.size,0,'a persistent pin does not retain a physical pointer');
+  input.end(event(1,'pointerup',0,0,'mouse'));step();
+  assert.equal(body.grabs.length,1,'the anchor survives mouse-up');
+  body.updateSurface(); // A rendered frame precedes the next pointer-down.
+  const pin=body.grab,pinTarget=pin.target.clone();armed=false;
+  input.begin(event(2,'pointerdown',0,0,'mouse'));assert.equal(body.grabs.length,2,'a second mouse grip can work against the pin');
+  input.pointerMove(event(2,'pointermove',55,-30,'mouse'));
+  for(let i=0;i<40;i++)step();assert(pin.target.distanceTo(pinTarget)<1e-12,'pulling does not move the fixed anchor');
+  input.end(event(2,'pointerup',55,-30,'mouse'));step();step();assert.equal(body.grabs.length,1,'releasing the moving grip preserves the pin');
+  globalThis.window.dispatchEvent(new globalThis.Event('blur'));
+  assert.equal(body.grabs.length,0,'blur clears pins');assert.equal(input.controls.enabled,true);input.dispose();
+}
+{
+  const {input,body,event,step}=setup();
+  input.begin(event(1,'pointerdown',0,0,'pen'));input.begin(event(2));
+  assert.equal(body.grabs.length,2,'pen and touch can hold separate points');
+  input.end(event(1,'pointercancel',0,0,'pen'));step();step();assert.equal(body.grabs.length,1,'canceling pen preserves the finger');input.dispose();
+}
+console.log('Multitouch, mouse pins, pen + touch, independent release, cleanup, and native/JS physics passed.',{maxDifference});

@@ -1,0 +1,77 @@
+{
+  "id": "cheeks",
+  "sourceHash": "cbca6dcd148fae3168760902c7db1af4992d0db2ef2af39a8fbf7f0eace6a4fb",
+  "source": "https://squishy-official.com/produit/squishy-mochi-hamster/",
+  "scale": 0.039823524633350295,
+  "bottom": -0.11928423538294311,
+  "volume": 0.0001011064673590247,
+  "face": {
+    "x": 0.32,
+    "y": 1.19,
+    "eye": 0.046,
+    "noseY": 1.25,
+    "mouthY": 1.18,
+    "mouth": "none",
+    "eyes": "round",
+    "ink": "#27252c",
+    "nose": "none",
+    "blush": 0
+  },
+  "layout": {
+    "positions": {
+      "offset": 0,
+      "length": 52146,
+      "type": "Float32Array"
+    },
+    "normals": {
+      "offset": 208584,
+      "length": 52146,
+      "type": "Float32Array"
+    },
+    "indices": {
+      "offset": 417168,
+      "length": 104280,
+      "type": "Uint32Array"
+    },
+    "colors": {
+      "offset": 834288,
+      "length": 52146,
+      "type": "Float32Array"
+    },
+    "particles": {
+      "offset": 1042872,
+      "length": 1956,
+      "type": "Float64Array"
+    },
+    "tets": {
+      "offset": 1058520,
+      "length": 10152,
+      "type": "Uint32Array"
+    },
+    "volumes": {
+      "offset": 1099128,
+      "length": 2538,
+      "type": "Float64Array"
+    },
+    "bindingIds": {
+      "offset": 1119432,
+      "length": 69528,
+      "type": "Uint32Array"
+    },
+    "bindingWeights": {
+      "offset": 1397544,
+      "length": 69528,
+      "type": "Float64Array"
+    },
+    "tetIds": {
+      "offset": 1953768,
+      "length": 17382,
+      "type": "Uint32Array"
+    },
+    "contacts": {
+      "offset": 2023296,
+      "length": 768,
+      "type": "Uint32Array"
+    }
+  }
+}

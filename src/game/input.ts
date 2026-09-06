@@ -10,6 +10,7 @@ import { SurfaceBVH } from '../graphics/refractive-light.js';
 type PointerGrab={
   grab:NonNullable<ReturnType<typeof surfaceGrab>>;
   pointerType:string;
+  pinned?:boolean;
   plane:THREE.Plane;
   rawTarget:THREE.Vector3;
   releasePending:boolean;
@@ -39,12 +40,15 @@ export class Input {
   readonly camera:THREE.PerspectiveCamera;
   readonly body:SoftBody;
   readonly mesh:THREE.Mesh;
-  readonly rig:Locomotion;
+  readonly rig:Pick<Locomotion,'move'|'jump'|'reset'>;
+  private pinSerial=-1;
+  private pinMode:()=>boolean;
   readonly sound:JellySound;
   readonly reset:()=>void;
   constructor(camera:THREE.PerspectiveCamera,canvas:HTMLCanvasElement,
-    body:SoftBody,mesh:THREE.Mesh,rig:Locomotion,sound:JellySound,
-    reset:()=>void) {
+    body:SoftBody,mesh:THREE.Mesh,rig:Pick<Locomotion,'move'|'jump'|'reset'>,sound:JellySound,
+    reset:()=>void,pinMode:()=>boolean=()=>false) {
+    this.pinMode=pinMode;
     this.camera=camera;this.body=body;this.mesh=mesh;this.rig=rig;this.sound=sound;this.reset=reset;
     this.canvas=canvas;this.grabBVH=new SurfaceBVH(body.surface);
     this.controls=new OrbitControls(camera,canvas);
@@ -138,30 +142,33 @@ export class Input {
   }
   private begin=(e:PointerEvent)=>{
     if(e.button!==0||this.grabs.has(e.pointerId)||this.body.grabs.length>=MAX_GRABS)return;
-    // Only touch can add simultaneous grips; desktop mouse/pen keep one grip.
-    if(this.body.grab&&(e.pointerType!=='touch'||[...this.grabs.values()].some(state=>state.pointerType!=='touch')))return;
+    // Pointer IDs, not device type, own grips. Pen + touch may cooperate;
+    // a desktop pin leaves the mouse available for the opposite side.
+    if([...this.grabs.values()].some(state=>!state.pinned&&(state.pointerType==='mouse'||e.pointerType==='mouse')))return;
     this.eventRay(e);
     // Exact picking against the same full-resolution deformed surface that is
     // rendered, but through its refittable BVH instead of Three's O(144k)
     // triangle scan. This changes no grip position or binding semantics.
     this.grabBVH.refit();
     const ray=this.raycaster.ray,o=[ray.origin.x,ray.origin.y,ray.origin.z],d=[ray.direction.x,ray.direction.y,ray.direction.z];
-    const hit=this.grabBVH.hit(o,d);if(!hit)return;
+    const hit=this.grabBVH.hit(o,d);if(!hit){if(this.body.grab){e.preventDefault();e.stopImmediatePropagation();}return;}
     const ix=this.body.surface.indices,offset=hit.t*3;
     const face={a:ix[offset],b:ix[offset+1],c:ix[offset+2]};
     const point=ray.at(hit.distance,new THREE.Vector3());
     void this.sound.unlock().catch(()=>{});
     e.preventDefault();e.stopImmediatePropagation();
+    const pinned=e.pointerType!=='touch'&&(e.shiftKey||this.pinMode());
+    if(pinned)for(const [id,state] of this.grabs)if(state.pinned&&state.grab.point.distanceTo(point)<.006){this.finishRelease(id);return;}
     const grab=surfaceGrab(this.body,face,point);if(!grab)return;
     this.body.grabs.push(grab);this.body.wake();
     this.camera.getWorldDirection(this.temp);
-    this.grabs.set(e.pointerId,{
-      grab,pointerType:e.pointerType,
+    this.grabs.set(pinned?this.pinSerial--:e.pointerId,{
+      grab,pointerType:e.pointerType,pinned,
       plane:new THREE.Plane().setFromNormalAndCoplanarPoint(this.temp,point),rawTarget:point.clone(),
       releasePending:false,releaseStepsRemaining:0,physicsSteps:0,commandVersion:0,consumedVersion:0,
     });
     this.controls.enabled=false;
-    this.canvas.setPointerCapture(e.pointerId);this.canvas.classList.add('grabbing');
+    if(!pinned)this.canvas.setPointerCapture(e.pointerId);this.canvas.classList.add('grabbing');
   };
   private pointerMove=(e:PointerEvent)=>{
     const state=this.grabs.get(e.pointerId);
@@ -180,7 +187,7 @@ export class Input {
   };
   private end=(e:PointerEvent)=>{
     const state=this.grabs.get(e.pointerId);
-    if(!state||state.releasePending)return;
+    if(!state||state.releasePending||state.pinned)return;
     // pointerup itself may be the only event carrying an abrupt drag endpoint.
     if(e.type==='pointerup')this.captureDragTarget(e,state);
     e.preventDefault();e.stopImmediatePropagation();
@@ -202,13 +209,13 @@ export class Input {
       this.grabs.delete(pointerId);
       const index=this.body.grabs.indexOf(state.grab);
       if(index!==-1)this.body.grabs.splice(index,1);
-      if(this.canvas.hasPointerCapture(pointerId))this.canvas.releasePointerCapture(pointerId);
+      if(!state.pinned&&this.canvas.hasPointerCapture(pointerId))this.canvas.releasePointerCapture(pointerId);
     }
     if(id===undefined)this.body.grab=null;
     this.body.wake();this.syncGrabControls();
   };
   private keyDown=(e:KeyboardEvent)=>{
-    if((e.target as HTMLElement)?.closest('input,textarea,select,[contenteditable="true"]'))return;
+    if((e.target as HTMLElement)?.closest('input,textarea,select,dialog,[contenteditable="true"]'))return;
     if(e.code==='Space'&&(e.target as HTMLElement)?.closest('button'))return;
     if(['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowLeft','ArrowDown','ArrowRight','Space'].includes(e.code)) {
       e.preventDefault();this.keys.add(e.code);void this.sound.unlock().catch(()=>{});
@@ -271,6 +278,7 @@ export class Input {
     this.camera.position.add(this.temp);this.controls.target.copy(this.follow);
     this.controls.update();
   }
+  get handles() {return [...this.grabs.values()].map(state=>({point:state.grab.point,target:state.grab.target,pinned:!!state.pinned}));}
   recenter() {this.clear();this.rig.reset();}
   dispose() {this.clear();this.abort.abort();this.controls.dispose();}
 }

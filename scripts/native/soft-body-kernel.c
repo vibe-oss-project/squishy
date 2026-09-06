@@ -1,3 +1,8 @@
+// Shared world hooks preserve JS/native parity without copying adhesion state.
+__attribute__((import_module("env"),import_name("world_begin"))) extern void world_begin(double h);
+__attribute__((import_module("env"),import_name("world_solve"))) extern void world_solve(double h);
+__attribute__((import_module("env"),import_name("world_friction"))) extern int world_friction(void);
+__attribute__((import_module("env"),import_name("world_velocity"))) extern void world_velocity(void);
 #include <stdint.h>
 
 // Tiny fixed-memory WebAssembly accelerator for the existing CPU XPBD solver.
@@ -182,22 +187,25 @@ static double preserve_orientation(double *x,const double *previous,double *cand
   return 1.0;
 }
 
-__attribute__((export_name("step"))) void step(double h,uint32_t grab_count,double gravity,double shear,double bulk,double air,double damping,uint32_t iterations,double static_friction,double dynamic_friction,double restitution,double floor,double max_grab_force) {
+__attribute__((export_name("step"))) void step(double h,uint32_t grab_count,double gravity,double shear,double bulk,double air,double damping,uint32_t iterations,double static_friction,double dynamic_friction,double restitution,double floor,double max_grab_force,uint32_t world_active) {
   double *x=d64(x_p),*previous=d64(previous_p),*candidate=d64(candidate_p),*velocity=d64(velocity_p),*mass=d64(mass_p),*inverse_mass=d64(inverse_mass_p),*node_contact=d64(contact_node_p);
   uint32_t *ids=u32(element_ids_p);double *volume=d64(element_volume_p),*grad=d64(element_gradients_p),*lambdaD=d64(lambda_d_p),*lambdaH=d64(lambda_h_p),*lambdaB=d64(lambda_b_p);
   double *cn=d64(contact_normal_p),*ci=d64(contact_incoming_p),*cw=d64(contact_weights_p);uint32_t *cids=u32(contact_ids_p);double *meta=d64(meta_p);
   for(uint32_t i=0;i<node_count*3;i++){previous[i]=x[i];node_contact[i/3]=0;velocity[i]*=air;}for(uint32_t i=1;i<node_count*3;i+=3)velocity[i]-=gravity*h;
   for(uint32_t c=0;c<contact_count;c++){cn[c]=0;ci[c]=0;uint32_t o=c*4;for(uint32_t k=0;k<4;k++){uint32_t id=cids[o+k];ci[c]+=velocity[id*3+1]*cw[o+k];}}
+  if(world_active)world_begin(h);
   for(uint32_t i=0;i<node_count*3;i++)x[i]+=velocity[i]*h;for(uint32_t e=0;e<element_count;e++)lambdaD[e]=lambdaH[e]=lambdaB[e]=0;for(uint32_t k=0;k<grab_count*3;k++)d64(grab_lambda_p)[k]=0;
   for(uint32_t iteration=0;iteration<iterations;iteration++) {
     if(iteration&1){for(uint32_t n=element_count;n-->0;)solve_element(n,h,shear,bulk,x,inverse_mass,ids,volume,grad,lambdaD,lambdaH,lambdaB);}else{for(uint32_t n=0;n<element_count;n++)solve_element(n,h,shear,bulk,x,inverse_mass,ids,volume,grad,lambdaD,lambdaH,lambdaB);}
-    for(uint32_t g=0;g<grab_count;g++)solve_grab(g,h,max_grab_force,x,inverse_mass);solve_contacts(floor,x,inverse_mass,node_contact);
+    for(uint32_t g=0;g<grab_count;g++)solve_grab(g,h,max_grab_force,x,inverse_mass);if(world_active)world_solve(h);else solve_contacts(floor,x,inverse_mass,node_contact);
   }
   uint32_t grounded=0;double *denom=d64(contact_denominator_p);
-  for(uint32_t c=0;c<contact_count;c++)if(cn[c]>0){grounded=1;double dx=0,dz=0;uint32_t o=c*4;for(uint32_t k=0;k<4;k++){uint32_t id=cids[o+k];dx+=(x[id*3]-previous[id*3])*cw[o+k];dz+=(x[id*3+2]-previous[id*3+2])*cw[o+k];}double tangent=dsqrt(dx*dx+dz*dz),friction=tangent<static_friction*cn[c]?1:dmin(1,dynamic_friction*cn[c]/(tangent+1e-20));for(uint32_t k=0;k<4;k++){uint32_t id=cids[o+k];double s=inverse_mass[id]*cw[o+k]*friction/denom[c];x[id*3]-=dx*s;x[id*3+2]-=dz*s;}}
+  for(uint32_t c=0;!world_active&&c<contact_count;c++)if(cn[c]>0){grounded=1;double dx=0,dz=0;uint32_t o=c*4;for(uint32_t k=0;k<4;k++){uint32_t id=cids[o+k];dx+=(x[id*3]-previous[id*3])*cw[o+k];dz+=(x[id*3+2]-previous[id*3+2])*cw[o+k];}double tangent=dsqrt(dx*dx+dz*dz),friction=tangent<static_friction*cn[c]?1:dmin(1,dynamic_friction*cn[c]/(tangent+1e-20));for(uint32_t k=0;k<4;k++){uint32_t id=cids[o+k];double s=inverse_mass[id]*cw[o+k]*friction/denom[c];x[id*3]-=dx*s;x[id*3+2]-=dz*s;}}
+  if(world_active)grounded=world_friction();
   meta[14]=preserve_orientation(x,previous,candidate,meta,inverse_mass,ids,grad);
   for(uint32_t i=0;i<node_count*3;i++)velocity[i]=(x[i]-previous[i])/h;
-  for(uint32_t c=0;c<contact_count;c++)if(cn[c]>0&&ci[c]<0){double vy=0;uint32_t o=c*4;for(uint32_t k=0;k<4;k++){uint32_t id=cids[o+k];vy+=velocity[id*3+1]*cw[o+k];}double bounce=ci[c]<-.18?-ci[c]*restitution:0,impulse=dmax(0,bounce-vy)/denom[c];for(uint32_t k=0;k<4;k++){uint32_t id=cids[o+k];velocity[id*3+1]+=inverse_mass[id]*cw[o+k]*impulse;}}
+  for(uint32_t c=0;!world_active&&c<contact_count;c++)if(cn[c]>0&&ci[c]<0){double vy=0;uint32_t o=c*4;for(uint32_t k=0;k<4;k++){uint32_t id=cids[o+k];vy+=velocity[id*3+1]*cw[o+k];}double bounce=ci[c]<-.18?-ci[c]*restitution:0,impulse=dmax(0,bounce-vy)/denom[c];for(uint32_t k=0;k<4;k++){uint32_t id=cids[o+k];velocity[id*3+1]+=inverse_mass[id]*cw[o+k]*impulse;}}
+  if(world_active)world_velocity();
   const uint32_t *edges=u32(edge_ids_p);
   for(uint32_t e=0;e<edge_count;e++){uint32_t a=edges[e*2],b=edges[e*2+1],ia=a*3,ib=b*3;double dx=x[ib]-x[ia],dy=x[ib+1]-x[ia+1],dz=x[ib+2]-x[ia+2],len=dsqrt(dx*dx+dy*dy+dz*dz);if(len<1e-9)continue;double nx=dx/len,ny=dy/len,nz=dz/len,relative=(velocity[ib]-velocity[ia])*nx+(velocity[ib+1]-velocity[ia+1])*ny+(velocity[ib+2]-velocity[ia+2])*nz;double impulse=relative*damping/(inverse_mass[a]+inverse_mass[b]),sa=impulse*inverse_mass[a],sb=impulse*inverse_mass[b];velocity[ia]+=sa*nx;velocity[ia+1]+=sa*ny;velocity[ia+2]+=sa*nz;velocity[ib]-=sb*nx;velocity[ib+1]-=sb*ny;velocity[ib+2]-=sb*nz;}
   double cx=0,cy=0,cz=0,energy=0;for(uint32_t i=0;i<node_count;i++){uint32_t j=i*3;double mw=mass[i]/total_mass;cx+=x[j]*mw;cy+=x[j+1]*mw;cz+=x[j+2]*mw;energy+=.5*mass[i]*(velocity[j]*velocity[j]+velocity[j+1]*velocity[j+1]+velocity[j+2]*velocity[j+2]);}

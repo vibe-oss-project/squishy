@@ -4,8 +4,8 @@ import { determinant, inverse3 } from '../src/physics/soft-body.js';
 const corners=[[0,0,0],[1,0,0],[1,1,0],[0,1,0],[0,0,1],[1,0,1],[1,1,1],[0,1,1]];
 const splits=[[0,5,1,6],[0,1,2,6],[0,2,3,6],[0,3,7,6],[0,7,4,6],[0,4,5,6]];
 
-export function buildCage(positions,scale,bottom,sdf,physicalVolume) {
-  const h=.0075,lo=[Infinity,Infinity,Infinity],hi=[-Infinity,-Infinity,-Infinity];
+export function buildCage(positions,scale,bottom,sdf,physicalVolume,h=.0075) {
+  const lo=[Infinity,Infinity,Infinity],hi=[-Infinity,-Infinity,-Infinity];
   for(let i=0;i<positions.length;i++) {lo[i%3]=Math.min(lo[i%3],positions[i]);hi[i%3]=Math.max(hi[i%3],positions[i]);}
   const origin=lo.map(x=>Math.floor(x/h)*h-h*.25);
   const dims=hi.map((x,a)=>Math.ceil((x-origin[a])/h)+1);

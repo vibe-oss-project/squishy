@@ -1,5 +1,5 @@
 {
-  "name": "jelly_baby",
+  "name": "squishy-playground",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -14,7 +14,12 @@
     "test:performance": "node --experimental-strip-types scripts/verify-performance.mjs",
     "benchmark": "node --experimental-strip-types scripts/benchmark.mjs",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "build:squishies": "node scripts/build-squishies.mjs",
+    "test:squishies": "node --experimental-strip-types scripts/verify-squishies.mjs",
+    "test:faces": "node --experimental-strip-types scripts/verify-faces.mjs",
+    "test:selection": "node --experimental-strip-types scripts/verify-selection.mjs",
+    "test:collisions": "node --experimental-strip-types scripts/verify-collisions.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -28,5 +33,8 @@
   "dependencies": {
     "delaunator": "^5.1.0",
     "three": "^0.185.0"
+  },
+  "engines": {
+    "node": "24.x"
   }
 }

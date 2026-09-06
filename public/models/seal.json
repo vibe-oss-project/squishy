@@ -1,0 +1,77 @@
+{
+  "id": "seal",
+  "sourceHash": "cbca6dcd148fae3168760902c7db1af4992d0db2ef2af39a8fbf7f0eace6a4fb",
+  "source": "https://squishy-official.com/produit/squishy-mochi-phoque/",
+  "scale": 0.031,
+  "bottom": -0.00996305338167765,
+  "volume": 0.0000437797183734511,
+  "face": {
+    "x": 0.255,
+    "y": 0.41,
+    "eye": 0.039,
+    "noseY": 0.35,
+    "mouthY": 0.29,
+    "mouth": "seal",
+    "eyes": "round",
+    "ink": "#27252c",
+    "nose": "#27252c",
+    "blush": 0
+  },
+  "layout": {
+    "positions": {
+      "offset": 0,
+      "length": 50340,
+      "type": "Float32Array"
+    },
+    "normals": {
+      "offset": 201360,
+      "length": 50340,
+      "type": "Float32Array"
+    },
+    "indices": {
+      "offset": 402720,
+      "length": 100668,
+      "type": "Uint32Array"
+    },
+    "colors": {
+      "offset": 805392,
+      "length": 50340,
+      "type": "Float32Array"
+    },
+    "particles": {
+      "offset": 1006752,
+      "length": 1176,
+      "type": "Float64Array"
+    },
+    "tets": {
+      "offset": 1016160,
+      "length": 5448,
+      "type": "Uint32Array"
+    },
+    "volumes": {
+      "offset": 1037952,
+      "length": 1362,
+      "type": "Float64Array"
+    },
+    "bindingIds": {
+      "offset": 1048848,
+      "length": 67120,
+      "type": "Uint32Array"
+    },
+    "bindingWeights": {
+      "offset": 1317328,
+      "length": 67120,
+      "type": "Float64Array"
+    },
+    "tetIds": {
+      "offset": 1854288,
+      "length": 16780,
+      "type": "Uint32Array"
+    },
+    "contacts": {
+      "offset": 1921408,
+      "length": 768,
+      "type": "Uint32Array"
+    }
+  }
+}

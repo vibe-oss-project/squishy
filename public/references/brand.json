@@ -1,0 +1,9 @@
+{
+  "source": "https://squishy-official.com/",
+  "consulted": "2026-09-06",
+  "primaryColor": "#84D1FB",
+  "primaryColorSource": "--wd-primary-color in the home page theme styles",
+  "fonts": ["Fredoka", "Lexend"],
+  "fontsSource": "Google Fonts CSS linked by the home page",
+  "environmentPalettes": "Pastel interpretations created for the game"
+}

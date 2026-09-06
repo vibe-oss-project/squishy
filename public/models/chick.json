@@ -1,0 +1,77 @@
+{
+  "id": "chick",
+  "sourceHash": "cbca6dcd148fae3168760902c7db1af4992d0db2ef2af39a8fbf7f0eace6a4fb",
+  "source": "https://squishy-official.com/produit/squishy-mochi-poussin/",
+  "scale": 0.04082378185327808,
+  "bottom": -0.08474115797655044,
+  "volume": 0.00009833781939086393,
+  "face": {
+    "x": 0.265,
+    "y": 1.29,
+    "eye": 0.03,
+    "noseY": 1.25,
+    "mouthY": 1.18,
+    "mouth": "none",
+    "eyes": "round",
+    "ink": "#27252c",
+    "nose": "none",
+    "blush": 0
+  },
+  "layout": {
+    "positions": {
+      "offset": 0,
+      "length": 46512,
+      "type": "Float32Array"
+    },
+    "normals": {
+      "offset": 186048,
+      "length": 46512,
+      "type": "Float32Array"
+    },
+    "indices": {
+      "offset": 372096,
+      "length": 93012,
+      "type": "Uint32Array"
+    },
+    "colors": {
+      "offset": 744144,
+      "length": 46512,
+      "type": "Float32Array"
+    },
+    "particles": {
+      "offset": 930192,
+      "length": 1935,
+      "type": "Float64Array"
+    },
+    "tets": {
+      "offset": 945672,
+      "length": 9984,
+      "type": "Uint32Array"
+    },
+    "volumes": {
+      "offset": 985608,
+      "length": 2496,
+      "type": "Float64Array"
+    },
+    "bindingIds": {
+      "offset": 1005576,
+      "length": 62016,
+      "type": "Uint32Array"
+    },
+    "bindingWeights": {
+      "offset": 1253640,
+      "length": 62016,
+      "type": "Float64Array"
+    },
+    "tetIds": {
+      "offset": 1749768,
+      "length": 15504,
+      "type": "Uint32Array"
+    },
+    "contacts": {
+      "offset": 1811784,
+      "length": 768,
+      "type": "Uint32Array"
+    }
+  }
+}

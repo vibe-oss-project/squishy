@@ -1,0 +1,77 @@
+{
+  "id": "fluffy",
+  "sourceHash": "cbca6dcd148fae3168760902c7db1af4992d0db2ef2af39a8fbf7f0eace6a4fb",
+  "source": "https://squishy-official.com/produit/squishy-mochi-chat-fluffy/",
+  "scale": 0.034699098446410524,
+  "bottom": -0.17968071942265865,
+  "volume": 0.00006581893821199106,
+  "face": {
+    "x": 0.235,
+    "y": 1.36,
+    "eye": 0.029,
+    "noseY": 1.32,
+    "mouthY": 1.25,
+    "mouth": "dot",
+    "eyes": "round",
+    "ink": "#27252c",
+    "nose": "#27252c",
+    "blush": 0
+  },
+  "layout": {
+    "positions": {
+      "offset": 0,
+      "length": 47520,
+      "type": "Float32Array"
+    },
+    "normals": {
+      "offset": 190080,
+      "length": 47520,
+      "type": "Float32Array"
+    },
+    "indices": {
+      "offset": 380160,
+      "length": 95028,
+      "type": "Uint32Array"
+    },
+    "colors": {
+      "offset": 760272,
+      "length": 47520,
+      "type": "Float32Array"
+    },
+    "particles": {
+      "offset": 950352,
+      "length": 1422,
+      "type": "Float64Array"
+    },
+    "tets": {
+      "offset": 961728,
+      "length": 7032,
+      "type": "Uint32Array"
+    },
+    "volumes": {
+      "offset": 989856,
+      "length": 1758,
+      "type": "Float64Array"
+    },
+    "bindingIds": {
+      "offset": 1003920,
+      "length": 63360,
+      "type": "Uint32Array"
+    },
+    "bindingWeights": {
+      "offset": 1257360,
+      "length": 63360,
+      "type": "Float64Array"
+    },
+    "tetIds": {
+      "offset": 1764240,
+      "length": 15840,
+      "type": "Uint32Array"
+    },
+    "contacts": {
+      "offset": 1827600,
+      "length": 768,
+      "type": "Uint32Array"
+    }
+  }
+}

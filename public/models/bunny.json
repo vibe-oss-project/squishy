@@ -1,0 +1,77 @@
+{
+  "id": "bunny",
+  "sourceHash": "cbca6dcd148fae3168760902c7db1af4992d0db2ef2af39a8fbf7f0eace6a4fb",
+  "source": "https://squishy-official.com/produit/squishy-mochi-lapin/",
+  "scale": 0.03312636425128673,
+  "bottom": -0.10489663030031848,
+  "volume": 0.00005166205906130193,
+  "face": {
+    "x": 0.255,
+    "y": 0.73,
+    "eye": 0.049,
+    "noseY": 0.65,
+    "mouthY": 0.56,
+    "mouth": "dot",
+    "eyes": "round",
+    "ink": "#27252c",
+    "nose": "#27252c",
+    "blush": 0
+  },
+  "layout": {
+    "positions": {
+      "offset": 0,
+      "length": 50430,
+      "type": "Float32Array"
+    },
+    "normals": {
+      "offset": 201720,
+      "length": 50430,
+      "type": "Float32Array"
+    },
+    "indices": {
+      "offset": 403440,
+      "length": 100848,
+      "type": "Uint32Array"
+    },
+    "colors": {
+      "offset": 806832,
+      "length": 50430,
+      "type": "Float32Array"
+    },
+    "particles": {
+      "offset": 1008552,
+      "length": 1266,
+      "type": "Float64Array"
+    },
+    "tets": {
+      "offset": 1018680,
+      "length": 6000,
+      "type": "Uint32Array"
+    },
+    "volumes": {
+      "offset": 1042680,
+      "length": 1500,
+      "type": "Float64Array"
+    },
+    "bindingIds": {
+      "offset": 1054680,
+      "length": 67240,
+      "type": "Uint32Array"
+    },
+    "bindingWeights": {
+      "offset": 1323640,
+      "length": 67240,
+      "type": "Float64Array"
+    },
+    "tetIds": {
+      "offset": 1861560,
+      "length": 16810,
+      "type": "Uint32Array"
+    },
+    "contacts": {
+      "offset": 1928800,
+      "length": 768,
+      "type": "Uint32Array"
+    }
+  }
+}

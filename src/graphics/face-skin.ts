@@ -8,7 +8,7 @@ export class FaceSkin {
   private readonly bins=new Map<string,number[]>();
   private readonly cell=.002;
   private readonly body:SoftBody;
-  constructor(body:SoftBody) {
+  constructor(body:SoftBody,fullBody=false) {
     this.body=body;
     this.rest=new Float32Array(body.surface.positions);
     const p=this.rest,ix=body.surface.indices;
@@ -16,8 +16,8 @@ export class FaceSkin {
       const a=ix[t]*3,b=ix[t+1]*3,c=ix[t+2]*3;
       const det=(p[b]-p[a])*(p[c+1]-p[a+1])-(p[b+1]-p[a+1])*(p[c]-p[a]);
       if(det<=1e-14)continue;
-      const minX=Math.max(-.025,Math.min(p[a],p[b],p[c])),maxX=Math.min(.025,Math.max(p[a],p[b],p[c]));
-      const minY=Math.max(.025,Math.min(p[a+1],p[b+1],p[c+1])),maxY=Math.min(.062,Math.max(p[a+1],p[b+1],p[c+1]));
+      const minX=Math.max(fullBody?-Infinity:-.025,Math.min(p[a],p[b],p[c])),maxX=Math.min(fullBody?Infinity:.025,Math.max(p[a],p[b],p[c]));
+      const minY=Math.max(fullBody?-Infinity:.025,Math.min(p[a+1],p[b+1],p[c+1])),maxY=Math.min(fullBody?Infinity:.062,Math.max(p[a+1],p[b+1],p[c+1]));
       for(let x=Math.floor(minX/this.cell);x<=Math.floor(maxX/this.cell);x++)
         for(let y=Math.floor(minY/this.cell);y<=Math.floor(maxY/this.cell);y++) {
           const key=`${x},${y}`,bin=this.bins.get(key);

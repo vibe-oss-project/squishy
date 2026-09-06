@@ -1,0 +1,77 @@
+{
+  "id": "sleepy",
+  "sourceHash": "cbca6dcd148fae3168760902c7db1af4992d0db2ef2af39a8fbf7f0eace6a4fb",
+  "source": "https://squishy-official.com/produit/squishy-chat-endormi/",
+  "scale": 0.027065114545527482,
+  "bottom": -0.19849114626080175,
+  "volume": 0.0000365013986417275,
+  "face": {
+    "x": 0.26,
+    "y": 1.85,
+    "eye": 0.072,
+    "noseY": 1.81,
+    "mouthY": 1.69,
+    "mouth": "none",
+    "eyes": "sleep",
+    "ink": "#fffafa",
+    "nose": "#ec558e",
+    "blush": 0
+  },
+  "layout": {
+    "positions": {
+      "offset": 0,
+      "length": 61788,
+      "type": "Float32Array"
+    },
+    "normals": {
+      "offset": 247152,
+      "length": 61788,
+      "type": "Float32Array"
+    },
+    "indices": {
+      "offset": 494304,
+      "length": 123564,
+      "type": "Uint32Array"
+    },
+    "colors": {
+      "offset": 988560,
+      "length": 61788,
+      "type": "Float32Array"
+    },
+    "particles": {
+      "offset": 1235712,
+      "length": 1038,
+      "type": "Float64Array"
+    },
+    "tets": {
+      "offset": 1244016,
+      "length": 4704,
+      "type": "Uint32Array"
+    },
+    "volumes": {
+      "offset": 1262832,
+      "length": 1176,
+      "type": "Float64Array"
+    },
+    "bindingIds": {
+      "offset": 1272240,
+      "length": 82384,
+      "type": "Uint32Array"
+    },
+    "bindingWeights": {
+      "offset": 1601776,
+      "length": 82384,
+      "type": "Float64Array"
+    },
+    "tetIds": {
+      "offset": 2260848,
+      "length": 20596,
+      "type": "Uint32Array"
+    },
+    "contacts": {
+      "offset": 2343232,
+      "length": 768,
+      "type": "Uint32Array"
+    }
+  }
+}
