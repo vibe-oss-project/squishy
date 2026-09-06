@@ -23,7 +23,7 @@ export const SQUISHIES=[
 ];
 export const DEFAULT_SQUISHY='fluffy';
 export const ENVIRONMENTS=[
-  {id:'cloud',name:'Cloud Nine',icon:'☁',subtitle:'A little piece of the sky',background:'#d8edfc',floor:'#f0edfc',wall:'#d6e8fb',accent:'#bfa9e9',grip:1,friction:1},
+  {id:'cloud',name:'Pastel Studio',icon:'☁',subtitle:'Soft clay, little clouds, and you',background:'#eee6ee',floor:'#eadbcb',wall:'#e5dced',accent:'#bea6d5',grip:1,friction:1},
   {id:'room',name:'Mochi Room',icon:'♡',subtitle:'Your own cozy little corner',background:'#e9ddf6',floor:'#f4dee9',wall:'#dfd2f0',accent:'#aa8cc8',grip:.85,friction:1.2},
   {id:'candy',name:'Candy Break',icon:'✿',subtitle:'Welcome to the sweet shop',background:'#fce1e7',floor:'#e2f3dc',wall:'#f9d8e5',accent:'#f49eb6',grip:1.2,friction:.85},
   {id:'beach',name:'Vanilla Beach',icon:'☀',subtitle:'A softer kind of seaside',background:'#d2edf0',floor:'#f8e7be',wall:'#cee8e8',accent:'#ecbc77',grip:.55,friction:1.4},

@@ -19,6 +19,8 @@ Maintained by [Emmanuel Guillo — @emmgui](https://github.com/emmgui) in **[vib
 
 The adaptation adds ten implicit sculptures, classic and sticky material families, wall contacts, local adhesive bonds and peeling, mouse pins, new faces, five environments, and a collection interface. Scott's volumetric solver and grabbing system remain the foundation.
 
+**Pastel Studio** is a new environment authored in Blender for this adaptation. Its editable sculptures, baked vertex shading, and web export are included in the repository. See the [studio source and authoring guide](docs/pastel-studio.md).
+
 ## Product and visual references
 
 [Squishy Official](https://squishy-official.com/) provides the product references and visual inspiration for the brief. This project is not affiliated with the store. Product photos in `public/references/` serve as selection thumbnails and sculpting references. The product pages and photograph URLs are listed in [sources.json](public/references/sources.json). These images remain attributed to their respective rights holders and are not presented as original artwork by this adaptation.

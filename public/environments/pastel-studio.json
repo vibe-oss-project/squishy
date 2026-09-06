@@ -1,0 +1,12 @@
+{
+  "generator": "Blender 5.2.1 LTS",
+  "source": "assets/blender/pastel-studio.blend",
+  "meshes": 16,
+  "vertices": 54012,
+  "bytes": 2870468,
+  "parts": {
+    "floor": 1,
+    "open": 8,
+    "sticky": 7
+  }
+}

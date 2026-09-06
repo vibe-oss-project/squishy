@@ -16,6 +16,7 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "build:squishies": "node scripts/build-squishies.mjs",
+    "test:studio": "node --experimental-strip-types scripts/verify-studio.mjs",
     "test:squishies": "node --experimental-strip-types scripts/verify-squishies.mjs",
     "test:faces": "node --experimental-strip-types scripts/verify-faces.mjs",
     "test:selection": "node --experimental-strip-types scripts/verify-selection.mjs",

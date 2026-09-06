@@ -40,7 +40,11 @@ Holds are cleared on cancellation, loss of focus, and changes of toy or world. S
 
 ## Five little worlds
 
-**Cloud Nine**, **Mochi Room**, **Candy Break**, **Vanilla Beach**, and **Starry Dream** are available from the world picker. Classics use an open floor without physical or visual walls. Sticky Mochi use a larger room, with its own friction and adhesion settings. Walls continue above the camera and repeating illustrations keep the world colorful at any height. Ground motifs and lowered artwork are visible at startup. High throws are preserved; only throws far outside the horizontal play area reset.
+**Pastel Studio**, **Mochi Room**, **Candy Break**, **Vanilla Beach**, and **Starry Dream** are available from the world picker. Pastel Studio is the first Blender-authored environment: a continuous cream play surface, sculpted clouds, a ceramic rainbow, rounded stars, and baked ambient occlusion. Classics have an open composition with freestanding accessories; sticky Mochi have a lavender room with shallow wall reliefs and clear surfaces to cling to. The other four worlds retain their procedural artwork.
+
+The floor in every world is a single surface, including its painted inlay. Stable shadow filtering and a constant light direction prevent the previous overlapping floor layers and moving shadow noise. Sticky walls continue above the camera, and high throws are preserved; only throws far outside the horizontal play area reset.
+
+The editable [Blender source](assets/blender/pastel-studio.blend), [web asset](public/environments/pastel-studio.glb), and [authoring guide](docs/pastel-studio.md) are included. The Blender lighting is a review setup; the game uses its own real-time lighting and dynamic toy shadows.
 
 ## Run locally
 
@@ -81,6 +85,7 @@ npm run test:gestures
 npm run test:rest
 npm run test:multitouch
 npm run test:selection
+npm run test:studio
 npm run test:collisions
 npm run test:physics
 npm run test:performance

@@ -1,8 +1,10 @@
 import * as THREE from 'three/webgpu';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { uv,mix,color,floor,mod } from 'three/tsl';
+import { mix,color,positionWorld,smoothstep,length,sin,fwidth,max } from 'three/tsl';
 import type { EnvironmentSpec } from './toy.ts';
 import { ROOM_PLANES } from '../physics/sticky-world.js';
+import { PastelStudio } from './studio.ts';
+import { WorldLight } from './world-light.ts';
 
 /** Walls sit just behind ROOM_PLANES, leaving clearance for flush wall art. */
 export class PlaygroundWorld {
@@ -10,19 +12,15 @@ export class PlaygroundWorld {
   private readonly props=new THREE.Group();
   private readonly materials:THREE.Material[]=[];
   private readonly scene:THREE.Scene;
-  private readonly light:THREE.DirectionalLight;
-  private readonly fill:THREE.HemisphereLight;
+  private readonly lighting:WorldLight;
   private readonly walls:THREE.Mesh[]=[];
   private readonly art:THREE.InstancedMesh[]=[];
+  private studio:PastelStudio|null=null;
   constructor(scene:THREE.Scene) {
     this.scene=scene;scene.add(this.group);this.group.add(this.props);
-    this.light=new THREE.DirectionalLight('#fff6ef',2.3);this.light.position.set(-.14,.26,.18);
-    this.light.castShadow=true;this.light.shadow.mapSize.set(2048,2048);
-    Object.assign(this.light.shadow.camera,{left:-.20,right:.20,top:.23,bottom:-.14,near:.01,far:.8});
-    this.light.shadow.camera.updateProjectionMatrix();this.light.shadow.normalBias=.00025;this.light.shadow.bias=-.0001;this.light.shadow.radius=3;
-    this.fill=new THREE.HemisphereLight('#f9f6ff','#b9a9cb',1.45);
-    scene.add(this.light,this.light.target,this.fill);
+    this.lighting=new WorldLight(scene);
   }
+  async load(signal?:AbortSignal){this.studio=await PastelStudio.load(signal);}
   private mat(c:string,roughness=.8) {
     const m=new THREE.MeshStandardNodeMaterial({color:c,roughness});this.materials.push(m);return m;
   }
@@ -43,38 +41,35 @@ export class PlaygroundWorld {
   }
   set(spec:EnvironmentSpec,sticky=true) {
     this.clear();this.scene.background=new THREE.Color(spec.background);
-    this.fill.intensity=spec.id==='space'?1.3:1.45;this.light.intensity=spec.id==='space'?2.1:2.3;
-    const floorMaterial=this.mat(spec.floor);
-    if(spec.id==='candy'){
-      const tiles=uv().mul(700),check=mod(floor(tiles.x).add(floor(tiles.y)),2);
-      floorMaterial.colorNode=mix(color(spec.floor),color('#f6faeb'),check);
+    this.scene.fog=sticky?null:new THREE.Fog(spec.background,.48,1.2);
+    this.lighting.set(spec.id==='space');
+    const studio=spec.id==='cloud';
+    if(studio){
+      if(!this.studio)throw new Error('The Blender studio must load before the world is shown.');
+      this.studio.setSticky(sticky);this.group.add(this.studio.group);
+    } else {
+      const floorMaterial=this.mat(spec.floor);
+      const distance=length(positionWorld.xz),edge=max(fwidth(distance),.0004);
+      const pad=smoothstep(edge.negate().add(.086),edge.add(.086),distance);
+      const tiles=sin(positionWorld.x.mul(Math.PI/.045)).mul(sin(positionWorld.z.mul(Math.PI/.045)));
+      const aa=max(fwidth(tiles),.01),check=smoothstep(aa.negate(),aa,tiles);
+      const base=spec.id==='candy'?mix(color(spec.floor),color('#f6faeb'),check):color(spec.floor);
+      floorMaterial.colorNode=mix(color(new THREE.Color(spec.floor).lerp(new THREE.Color('#ffffff'),.30)),base,pad);
+      const ground=this.mesh(new THREE.PlaneGeometry(40,40),floorMaterial,0,0,0);ground.name='Continuous floor';ground.rotation.x=-Math.PI/2;
     }
-    const ground=this.mesh(new THREE.PlaneGeometry(40,40),floorMaterial,0,0,0);ground.rotation.x=-Math.PI/2;
     const wallZ=ROOM_PLANES[1].offset,sideX=-ROOM_PLANES[2].offset;
     if(sticky){
-      const back=this.mesh(new THREE.PlaneGeometry(sideX*2+.0006,40),this.mat(spec.wall),0,20,wallZ-.0003);
-      const left=this.mesh(new THREE.PlaneGeometry(40,40),this.mat(spec.wall),-sideX-.0003,20,20+wallZ);left.rotation.y=Math.PI/2;
-      const right=this.mesh(new THREE.PlaneGeometry(40,40),this.mat(spec.wall),sideX+.0003,20,20+wallZ);right.rotation.y=-Math.PI/2;
+      const wallMaterial=this.mat(spec.wall);
+      if(studio)wallMaterial.colorNode=mix(color('#d8c6e3'),color(spec.wall),smoothstep(0,.13,positionWorld.y));
+      const back=this.mesh(new THREE.PlaneGeometry(sideX*2+.0006,40),wallMaterial,0,20,wallZ-.0003);
+      const left=this.mesh(new THREE.PlaneGeometry(40,40),wallMaterial,-sideX-.0003,20,20+wallZ);left.rotation.y=Math.PI/2;
+      const right=this.mesh(new THREE.PlaneGeometry(40,40),wallMaterial,sideX+.0003,20,20+wallZ);right.rotation.y=-Math.PI/2;
       this.walls.push(back,left,right);
-      this.mesh(new RoundedBoxGeometry(sideX*2,.003,.0001,2,.00003),this.mat(spec.accent),0,.0015,wallZ-.00015);
+      if(!studio)this.mesh(new RoundedBoxGeometry(sideX*2,.003,.001,3,.00015),this.mat(spec.accent),0,.0015,wallZ-.0007);
     }
-    // Ground motifs stay in view around the toy in both open and sticky worlds.
-    const padMaterial=new THREE.MeshBasicNodeMaterial({color:new THREE.Color(spec.floor).lerp(new THREE.Color('#ffffff'),.42),toneMapped:false});this.materials.push(padMaterial);
-    const pad=this.mesh(new THREE.CircleGeometry(.086,96),padMaterial,0,.000025,0);pad.rotation.x=-Math.PI/2;
-    for(const [x,z,r] of [[-.105,.012,.010],[.098,-.034,.008],[-.072,-.068,.006],[.080,.053,.005]]){
-      const mark=this.star(spec.accent,x,.00006,z,r,4);mark.rotation.x=-Math.PI/2;mark.scale.z=.001;mark.receiveShadow=false;
-    }
+    if(studio)return;
     const decalStart=this.props.children.length;
-    if(spec.id==='cloud'){
-      this.cloud('#fffdf9',-.064,.112,-.078,.037);this.cloud('#f7f3ff',.075,.152,-.078,.028);
-      this.star('#ffeeb0',.066,.095,-.075,.010);this.star('#f1bddc',-.064,.173,-.077,.006,4);
-      for(const [x,y] of [[-.10,.062],[.032,.16],[.108,.135]])this.sphere('#f5f5ff',x,y,-.079,.0025);
-      // Rainbow arc, confined to the wall decoration plane.
-      for(let i=0;i<3;i++){
-        const arc=this.mesh(new THREE.TorusGeometry(.031-i*.005,.0022,8,40,Math.PI),this.mat(['#f1b7d7','#fff0b6','#b9ded0'][i]),-.016,.162,-.082);
-        arc.rotation.z=0;
-      }
-    } else if(spec.id==='room') {
+    if(spec.id==='room') {
       const frame=this.mesh(new RoundedBoxGeometry(.065,.074,.004,3,.008),this.mat('#f8eee9'),-.066,.115,-.081);
       frame.castShadow=true;
       this.mesh(new RoundedBoxGeometry(.052,.059,.003,3,.005),this.mat('#bbdbed'),-.066,.115,-.0775);
@@ -124,7 +119,7 @@ export class PlaygroundWorld {
         p.setZ(i,(sticky?wallZ:-.22)-.00008+(p.getZ(i)-bounds.min.z)/depth*.00005);
       }
       p.needsUpdate=true;mesh.geometry.computeVertexNormals();mesh.geometry.computeBoundingBox();mesh.geometry.computeBoundingSphere();
-      const ink=new THREE.MeshBasicNodeMaterial({color:(mesh.material as THREE.MeshStandardNodeMaterial).color,toneMapped:false});this.materials.push(ink);
+      const ink=new THREE.MeshBasicNodeMaterial({color:(mesh.material as THREE.MeshStandardNodeMaterial).color,toneMapped:false,depthWrite:false});this.materials.push(ink);
       const repeated=new THREE.InstancedMesh(mesh.geometry,ink,6),matrix=new THREE.Matrix4();
       for(let i=0;i<6;i++)repeated.setMatrixAt(i,matrix.makeTranslation(0,(i-1)*.18,0));
       repeated.computeBoundingSphere();this.props.remove(mesh);this.props.add(repeated);this.art.push(repeated);
@@ -134,10 +129,8 @@ export class PlaygroundWorld {
     for(const wall of this.walls)wall.position.y=Math.max(20,height);
     const offset=Math.floor(Math.max(0,height-.28)/.18)*.18;
     for(const art of this.art)art.position.y=offset;
-    // Keep soft shadows with the toy even far above the initial play area.
-    this.light.position.y=Math.max(.26,height+.18);this.light.target.position.y=Math.max(0,height-.06);
-    this.light.target.updateMatrixWorld();
+    this.lighting.follow(height);
   }
-  private clear(){this.props.traverse(o=>{if(o instanceof THREE.Mesh)o.geometry.dispose();});this.props.clear();this.walls.length=0;this.art.length=0;for(const m of this.materials)m.dispose();this.materials.length=0;}
-  dispose(){this.clear();this.scene.remove(this.group,this.light,this.light.target,this.fill);this.light.shadow.dispose();}
+  private clear(){this.studio?.group.removeFromParent();this.props.traverse(o=>{if(o instanceof THREE.Mesh)o.geometry.dispose();});this.props.clear();this.walls.length=0;this.art.length=0;for(const m of this.materials)m.dispose();this.materials.length=0;}
+  dispose(){this.clear();this.studio?.dispose();this.studio=null;this.group.removeFromParent();this.lighting.dispose();}
 }

@@ -45,6 +45,7 @@ try {
   delayedId='panda';fetchStarted=deferred();const disposedRequest=choose(0);await fetchStarted.promise;selection.dispose();await disposedRequest;
   assert.equal(selection.toy,null);assert.equal(scene.children.length,0,'teardown never reattaches a stale toy');
   const worldScene=new Scene(),world=new PlaygroundWorld(worldScene);
+  await world.load();
   for(const environment of ENVIRONMENTS){
     world.set(environment,true);let meshes=0;
     world.group.traverse(object=>{if(object instanceof Mesh){meshes++;const positions=object.geometry.attributes.position.array;assert(positions.every(Number.isFinite),'environment geometry is finite');assert(object.material.isNodeMaterial,'environments use WebGPU node materials');}});

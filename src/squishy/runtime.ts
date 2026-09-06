@@ -18,10 +18,11 @@ export async function startGame(stage:(s:string)=>void,fail:(error:unknown)=>voi
   let disposed=false,bootFailure:unknown=null;
   const fatal=(error:unknown)=>{bootFailure=error;fail(error);};
   stage('Waking up your little world…');const renderer=await createRenderer(fatal);
-  renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFShadowMap;
+  renderer.toneMapping=THREE.NeutralToneMapping;renderer.toneMappingExposure=1.05;
+  renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
   renderer.domElement.setAttribute('aria-label','Squishy. Use several fingers to hold different points. With a mouse, Shift + click to pin, then drag another part. Press R to reset.');
   document.getElementById('viewport')!.append(renderer.domElement);
-  const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(36,1,.001,50);
+  const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(36,1,.006,50);
   camera.position.set(.025,.102,.205);camera.lookAt(0,.034,0);
   const sound=new JellySound(),world=new PlaygroundWorld(scene),selection=new ToySelection(renderer,scene,camera);
   const clock=new FixedStepper(PHYS.step),indicators=new GripIndicators(document.getElementById('grips')!);
@@ -50,6 +51,7 @@ export async function startGame(stage:(s:string)=>void,fail:(error:unknown)=>voi
     void renderer.setAnimationLoop(null);input?.dispose();selection.dispose();ui?.dispose();sound.dispose();indicators.clear();world.dispose();reflection?.dispose();renderer.dispose();
   };
   try {
+    stage('Opening the pastel studio…');await world.load(abort.signal);
     world.set(environment);resize();observer.observe(document.getElementById('viewport')!);
     stage('Adding a little soft light…');
     const room=new RoomEnvironment(),pmrem=new THREE.PMREMGenerator(renderer);
